@@ -13,11 +13,14 @@ void saveRtofile( double* r, int N_tot, FILE* fp ){
   int i;
   double *Q;
 
+  //fprintf(fp,"%d\n", N_tot);
+  //fprintf(fp,"Comment haha\n");
   for( i=0; i<N_tot; i++ ){
   
     Q = r + DIM*i;
 
-    fprintf( fp, "%lf\t%lf\t%lf\n", Q[0], Q[1], Q[2] );
+    //fprintf( fp, "C\t%lf\t%lf\t%lf\n", Q[0], Q[1], Q[2] );
+    fprintf( fp, "\t%lf\t%lf\t%lf\n", Q[0], Q[1], Q[2] );
   
   }
   fprintf( fp, "\n" );

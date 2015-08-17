@@ -4,13 +4,13 @@ Rg_N = [];
 
 for f=1:length(files)
     
-    if files(f).name(1) =='R'
+    if files(f).name(1) =='R';
         disp(files(f).name)
         N = str2double(files(f).name(3:5));
         sim = str2double(files(f).name(7:8));
         
         A = dlmread(strcat('dat/',files(f).name));
-
+        %A = read_xyz( strcat('dat/',files(f).name), N );
         t = size(A,1)/N;
         monomers = [1:N];
         
@@ -33,7 +33,7 @@ for f=1:length(files)
             
         end
         
-        Rg_N = [Rg_N; N, mean(sqrt(R2))];
+        Rg_N = [Rg_N; N,sqrt(mean(R2))];
         
         %plot(sqrt(R2));
         
@@ -53,7 +53,7 @@ for n=1:length(Narr)
     
 end
 
-errorbar(Narr,Rarr,Rerr,'o');
+errorbar(Narr(1:(end-1)),Rarr(1:(end-1)),Rerr(1:(end-1)),'o');
 x = 5:160;
 y = x.^(1/2);
 z = x.^(3/5);
@@ -65,3 +65,4 @@ ax = gca;
 ax.YScale='log';
 ax.XScale='log';
 xlim([3 200])
+

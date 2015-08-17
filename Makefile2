@@ -4,17 +4,16 @@ LDFLAGS=-std=c99
 SOURCES=md_test.c md_init.c md_algebra.c md_forces.c md_simulation.c md_io.c
 OBJECTS=$(SOURCES: .c=.o)
 EXECUTABLE=md_out
-
-# Comment out or add directory to NAG file:
-NAGCDIR=/opt/NAG/clmi623dgl # Andrew Macbook
-# NAGCDIR=/home/balin/Library/NAG/cll6i24dcl # Andrew's Linux
+NAGCDIR=/opt/NAG/clmi623dgl
 
 all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ -I${NAGCDIR}/include \
 					-m64 ${NAGCDIR}/lib/libnagc_nag.a \
-					-ldl -lpthread -lm
+					${NAGCDIR}/rtl/intel64/libifcore.a ${NAGCDIR}/rtl/intel64/libimf.a \
+        			${NAGCDIR}/rtl/intel64/libirc.a \
+					-ldl -lpthread -lm -fopenmp
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@

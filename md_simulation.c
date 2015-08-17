@@ -44,19 +44,20 @@ Results simulation( Polymers* Ply, Params parameters, double* r_init, int numPol
 	t0 = clock();
 	t1 = t0;
 	t2 = t0;
+	int tsave = 100;
 	for (int t = 0; t < total_time; ++t)
 	{
 		//printf("%d\n",t);
 
 
 
-		update( Ply, numPolymers, r, f, dw, r_ij, D, B, N_tot, HYDRO );
-		if( t % 1000 == 0 ){
+		update( Ply, numPolymers, r, f, dw, r_ij, D, B, N_tot, !HYDRO );
+		if( t % tsave == 0 ){
 			
 			t1 = clock();
 
 			t1000 = t1 - t2;
-			printf("N: %03d\tSim: %02d\tElapsed: %.3f\tRemaining: %.3f\n", N_tot, simnum, (t1-t0)/1000000, (total_time/1000 - t/1000)*t1000/1000000);
+			printf("N: %03d\tSim: %02d\tElapsed: %.3f\tRemaining: %.3f\n", N_tot, simnum, (t1-t0)/1000000, (total_time/tsave - t/tsave)*t1000/1000000);
 			
 			t2 = t1;
 

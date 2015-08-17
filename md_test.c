@@ -68,13 +68,13 @@ void simple_test(){
 	Results results; 
 	FILE *fp;
 	fp = fopen("dat/Rg_r_com.dat", "w");
-	for (int nn = 0; nn < 6; ++nn)
+	for (int nn = 0; nn < 6 ; ++nn)
 	{
 
 		double mean_Rg = 0.0;
 		double mean_r_com = 0.0;
 		N_tot = N_arr[ nn ];
-		//N_tot = 320;
+		//N_tot = 20;
 		for (int sim_number = 0; sim_number < 15; ++sim_number)
 		{
 			

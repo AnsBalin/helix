@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "/home/balin/Library/NAG/cll6i24dcl/include/nag.h"
-#include "/home/balin/Library/NAG/cll6i24dcl/include/nag_stdlib.h"
-#include "/home/balin/Library/NAG/cll6i24dcl/include/nagf07.h"
+#include "/opt/NAG/clmi623dgl/include/nag.h"
+#include "/opt/NAG/clmi623dgl/include/nag_stdlib.h"
+#include "/opt/NAG/clmi623dgl/include/nagf07.h"
 //#include <nagx04.h>
 #include "md_defs.h"
 #include "md_algebra.h"

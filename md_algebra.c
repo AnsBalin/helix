@@ -1,7 +1,7 @@
 //#include "md_h"
 #include "hdr/md_algebra.h"
 #include "hdr/md_defs.h"
-#include "omp.h"
+//#include "omp.h"
 
 void mat_multiply_sym_A_x( double* mat, int N, double* x, double* y ){
 	

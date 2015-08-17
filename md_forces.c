@@ -63,7 +63,7 @@ void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* 
  				p1 = (PlyList+p)->firstAtomID + i;
  				p2 = p1 + 1;
 
- 				force = hook( r_ij[ N*p1 + p2 ] );
+ 				force = fene( r_ij[ N*p1 + p2 ] );
  				//if(r_ij[N*p1 + p2]>1.5) printf("%f\n", force);
 
  				FOR_ALL_K r_diff[k]  =  r[  DIM*p1 + k ] - r[  DIM*p2 + k];
