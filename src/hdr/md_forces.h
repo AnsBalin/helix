@@ -16,7 +16,8 @@
 
 //void computeForces( Polymers* PlyList, int numPolymers, double temperature );
 void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N );
-void repel( int i, int j, double r_ij, double* f, double *r );
+void repel_old( int i, int j, double r_ij, double* f, double* r );
+void repel( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N  );
 void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N );
 void calc_dw( double* dw, int N_tot );
 double gaussian( double sigma );

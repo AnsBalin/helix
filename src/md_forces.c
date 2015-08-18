@@ -4,7 +4,6 @@
 void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N ){
 	
 	
-	
 	int r_ij_fail;
 	r_ij_fail = compute_r_ij( r, r_ij, N );
 
@@ -19,12 +18,33 @@ void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, do
 		{		
 
 			if( r_ij[ squ(i,j,N) ] <= q0 ){
-				repel( i, j, r_ij[squ(i,j,N)], f, r );
+				repel_old( i, j, r_ij[squ(i,j,N)], f, r );
 			}
 		}
 	}
  	
+ 	// repel( PlyList, numPolymers, r, f, r_ij, N  );
  	attract( PlyList, numPolymers, r, f, r_ij, N );
+
+}
+
+void repel_old( int i, int j, double r_ij, double* f, double* r ){
+
+	double* r_diff = malloc( DIM*sizeof(double));
+	double force;
+	double r_ij_renorm = r_ij;
+
+	force = softsphere( r_ij_renorm );
+	//force = (force>hook(2*q0)) ? hook(2*q0) : force;
+	
+
+	// r_diff points from rj to ri
+	FOR_ALL_K r_diff[k] = r[ DIM*i + k ] - r[ DIM*j + k ];
+	FOR_ALL_K f[ DIM*i + k ] +=  force*r_diff[k];
+	FOR_ALL_K f[ DIM*j + k ] += -force*r_diff[k];
+
+
+	free(r_diff);
 
 }
 
@@ -32,32 +52,33 @@ void repel( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_
 
 	double* r_diff = malloc( DIM*sizeof(double));
 	double force;
+	int numAtomsP, numAtomsQ, forceP, forceQ, p1, p2;
 	
+	for (int p = 0; p < numPolymers; ++p){
+ 		numAtomsP = (PlyList+p)->numAtoms;
+ 		forceP = (PlyList+p)->FORCE;
+ 		for (int q = p; q < numPolymers; ++q){
+ 			numAtomsQ = (PlyList+q)->numAtoms;
+ 			forceQ = (PlyList+q)->FORCE;
 
-	force = softsphere( r_ij_renorm );
-	//force = (force>hook(2*q0)) ? hook(2*q0) : force;
-	
-	// r_diff points from rj to ri
-	FOR_ALL_K r_diff[k] = r[ DIM*i + k ] - r[ DIM*j + k ];
-	FOR_ALL_K f[ DIM*i + k ] +=  force*r_diff[k];
-	FOR_ALL_K f[ DIM*j + k ] += -force*r_diff[k];
+ 			if (forceP+forceQ){
+	 			for (int i = 0; i < numAtomsP; ++i){
+	 				p1 = (PlyList+p)->firstAtomID + i;
+ 					for (int j = ((p==q)? i : 0); j < numAtomsQ; ++j){
+ 						p2 = (PlyList+q)->firstAtomID + j;
+ 						force = softsphere( r_ij[squ(p1,p2,N)] );
+ 						
+ 						FOR_ALL_K r_diff[k] = r[ DIM*p1 + k ] - r[ DIM*p2 + k ];
+						FOR_ALL_K f[ DIM*p1 + k ] +=  forceP*(2 - forceQ)*force*r_diff[k];
+						FOR_ALL_K f[ DIM*p2 + k ] += -forceQ*(2 - forceP)*force*r_diff[k];
+ 					}
+ 				}
+ 			}
+ 		
 
-	for (int i = 0; i < N; ++i)
-	{
-		for (int j = i+1; j < N; ++j)
-		{		
-
-			if( r_ij[ squ(i,j,N) ] <= q0 ){
-				force = softsphere( r_ij );
-				FOR_ALL_K r_diff[k] = r[ DIM*i + k ] - r[ DIM*j + k ];
-				FOR_ALL_K f[ DIM*i + k ] +=  force*r_diff[k];
-				FOR_ALL_K f[ DIM*j + k ] += -force*r_diff[k];
-
-			}
-		}
-	}
-
-
+ 		}
+ 	}
+ 	free(r_diff);
 }
 
 void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N ){
@@ -86,6 +107,8 @@ void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* 
  			}
  		}
  	}
+
+ 	free(r_diff);
 }
 
 /*void addNoise( Polymers* PlyList, double* r, double* f, double* r_ij, int N ){
