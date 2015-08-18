@@ -3,8 +3,8 @@
 
 void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N ){
 	
-	int* overlap_inds;
-	int numOverlap;
+	
+	
 	int r_ij_fail;
 	r_ij_fail = compute_r_ij( r, r_ij, N );
 
@@ -28,11 +28,11 @@ void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, do
 
 }
 
-void repel( int i, int j, double r_ij, double* f, double *r ){
+void repel( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N  ){
 
 	double* r_diff = malloc( DIM*sizeof(double));
 	double force;
-	double r_ij_renorm = r_ij;
+	
 
 	force = softsphere( r_ij_renorm );
 	//force = (force>hook(2*q0)) ? hook(2*q0) : force;
@@ -42,6 +42,20 @@ void repel( int i, int j, double r_ij, double* f, double *r ){
 	FOR_ALL_K f[ DIM*i + k ] +=  force*r_diff[k];
 	FOR_ALL_K f[ DIM*j + k ] += -force*r_diff[k];
 
+	for (int i = 0; i < N; ++i)
+	{
+		for (int j = i+1; j < N; ++j)
+		{		
+
+			if( r_ij[ squ(i,j,N) ] <= q0 ){
+				force = softsphere( r_ij );
+				FOR_ALL_K r_diff[k] = r[ DIM*i + k ] - r[ DIM*j + k ];
+				FOR_ALL_K f[ DIM*i + k ] +=  force*r_diff[k];
+				FOR_ALL_K f[ DIM*j + k ] += -force*r_diff[k];
+
+			}
+		}
+	}
 
 
 }
