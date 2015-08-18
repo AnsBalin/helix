@@ -13,6 +13,7 @@ and then edit it so that NAGCDIR looks like what mine looks like, but for your d
 The intel64/libi libraries are included as per a guide i found on the web, though I don't know what they are. Theyre specific to the linux version of NAG. Once you've editted it then
 
 >cp Makefile_TylerLinux Makefile
+
 >make
 
 should give you the executable md_out. 
