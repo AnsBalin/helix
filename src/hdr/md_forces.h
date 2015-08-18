@@ -18,8 +18,9 @@
 void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N );
 void repel_old( int i, int j, double r_ij, double* f, double* r );
 void repel( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N  );
+void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N );
 void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N );
-void calc_dw( double* dw, int N_tot );
+void calc_dw( Polymers* PlyList, int numPolymers, double* dw, int N_tot );
 double gaussian( double sigma );
 double softsphere( double r );
 int compute_r_ij( double* r, double* r_ij, int numAtoms );

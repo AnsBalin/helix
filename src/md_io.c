@@ -2,19 +2,19 @@
 
 
 void printAtomR( int atom, double* r ){
-  
+  /* Print a single atom's position to console */
+
   FOR_ALL_K printf("%.9f\t", r[DIM*atom + k]);
 
   printf("\n");
 }
 
 void saveRtofile( double* r, int N_tot, FILE* fp ){
-  
+  /*  Save data to a file easy for MATLAB */
+
   int i;
   double *Q;
 
-  //fprintf(fp,"%d\n", N_tot);
-  //fprintf(fp,"Comment haha\n");
   for( i=0; i<N_tot; i++ ){
   
     Q = r + DIM*i;
@@ -28,9 +28,28 @@ void saveRtofile( double* r, int N_tot, FILE* fp ){
 
 }
 
-void saveStatstofile( double t, double* r_com, double Rg, FILE* fp ){
+void saveXYZtofile( Polymers* PlyList, int numPolymers, double* r, int N_tot, FILE* fp ){
+  /*  XYZ file format for importing trajectories into VMD
+      NOTE Currently using Polymer ID as the molecule name in VMD, this might be messing it up */
 
-	double r_com_mag = VSqr( r_com );
-	fprintf( fp, "%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", t, r_com[0], r_com[1], r_com[2], r_com_mag, Rg );
+  int i, numAtoms, atomID, id;
+  double *Q;
+
+  fprintf(fp,"%d\n", N_tot);
+  fprintf(fp,"Obligatory comment\n");
+  for( i=0; i<numPolymers; i++ ){
+    
+    id = (PlyList+i)->firstAtomID;
+    numAtoms = (PlyList+i)->numAtoms;
+    for (int j = 0; j < numAtoms; ++j)
+    { 
+      atomID = id + j;
+      Q = r + DIM*atomID;
+      fprintf( fp, "%d\t%lf\t%lf\t%lf\n", i, Q[0], Q[1], Q[2] );
+    }
+
+  
+  }
+
 
 }

@@ -19,107 +19,89 @@ int main(){
 	return 0;
 }
 
-void md_init_SinglePolymer()
-{
+// void md_init_SinglePolymer()
+// {
 
-	double *r, *dr, *f, *dw, *D, *B, *rr;
-	const int N_tot = 2;
-	int numPolymers = 1;
+// 	double *r, *dr, *f, *dw, *D, *B, *rr;
+// 	const int N_tot = 2;
+// 	int numPolymers = 1;
 
-	srand(time(NULL));
-	allocAll( &r, &f, &dw, &D, &B, &rr, N_tot );
+// 	srand(time(NULL));
+// 	allocAll( &r, &f, &dw, &D, &B, &rr, N_tot );
 
-	Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
-	int id = 0;
-	Ply->numAtoms = N_tot/numPolymers;
-	Ply->NOISE = 1;
-	Ply->FORCE = 1;
-	Ply->HYDRO = 1;
-	Ply->firstAtomID = id;
-	id += Ply->numAtoms;
-	Ply->spring_constant = 1.0;
-	Ply->radius = 1.0;
+// 	Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
+// 	int id = 0;
+// 	Ply->numAtoms = N_tot/numPolymers;
+// 	Ply->FORCE = 1;
+// 	Ply->firstAtomID = id;
+// 	id += Ply->numAtoms;
+// 	Ply->spring_constant = 1.0;
+// 	Ply->radius = 1.0;
 
-	double r0[3] = {0.0, 0.0, 0.0};
-	double Dr[3] = {1.0, 0.0, 0.0};
-	placePolymer( Ply, SAW, r, r0, Dr, 0.0 );
+// 	double r0[3] = {0.0, 0.0, 0.0};
+// 	double Dr[3] = {1.0, 0.0, 0.0};
+// 	placePolymer( Ply, SAW, r, r0, Dr, 0.0 );
 
-	for (int i = 0; i < N_tot; ++i)
-	{
-		printf("%lf\t%lf\t%lf\n", r[DIM*i], r[DIM*i+1], r[DIM*i+2] ); 
-	}
+// 	for (int i = 0; i < N_tot; ++i)
+// 	{
+// 		printf("%lf\t%lf\t%lf\n", r[DIM*i], r[DIM*i+1], r[DIM*i+2] ); 
+// 	}
 
-	free(r);
-	free(dr);
-	free(f);
-	free(D);
-	free(B);
-	free(rr);
-	free(Ply);
+// 	free(r);
+// 	free(dr);
+// 	free(f);
+// 	free(D);
+// 	free(B);
+// 	free(rr);
+// 	free(Ply);
 
-}
+//}
 
 void simple_test(){
-
-//	int N_arr[7] = {10, 20, 40, 80, 160, 320, 640};
 
 	int N_arr[6] = {160, 80, 40, 20, 10, 5};
 	int N_tot;
 	Results results; 
-	FILE *fp;
-	fp = fopen("dat/Rg_r_com.dat", "w");
-	for (int nn = 0; nn < 6 ; ++nn)
+	for (int nn = 0; nn < 1 ; ++nn)
 	{
 
-		double mean_Rg = 0.0;
-		double mean_r_com = 0.0;
 		N_tot = N_arr[ nn ];
-		//N_tot = 20;
-		for (int sim_number = 0; sim_number < 15; ++sim_number)
+		N_tot = 50;
+		for (int sim_number = 0; sim_number < 1; ++sim_number)
 		{
 			
 			printf("%d, %d\n", N_tot, sim_number);
 			int numPolymers = 1;
 			srand(time(NULL)+sim_number);
 
+			/* Create 1 polymer */
 			Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
 			int id = 0;
 			Ply->numAtoms = N_tot/numPolymers;
-			Ply->NOISE = 1;
-			Ply->FORCE = 1;
-			Ply->HYDRO = 0;
+			Ply->perscription = 0;
 			Ply->firstAtomID = id;
 			id += Ply->numAtoms;
 			Ply->spring_constant = 1.0;
 			Ply->radius = 1.0;
 			
+			/* Plase it at the origin, with unit spacing according to SAW algorithm */
 			double* r_init = malloc( DIM*N_tot*sizeof(double) );
 			double r0[3] = {0.0, 0.0, 0.0};
 			double Dr[3] = {1.0, 0.0, 0.0};
 			placePolymer( Ply, SAW, r_init, r0, Dr, 0.0 );
 
-			for (int i = 0; i < N_tot; ++i)
-			{
-				//printf("%lf\t%lf\t%lf\n", r_init[DIM*i], r_init[DIM*i+1], r_init[DIM*i+2] ); 
-			}
-
-
-			Params parameters = { .total_time = 100000, .HYDRO =1, .temperature=1 };
-			
-			//printf("Starting simulation...\n");
-			results = simulation( Ply, parameters, r_init, 1, sim_number );
+			/* Simulation parameters (NOTE temperature does nothing) */
+			Params parameters = { .total_time = 100000, .hydro =1, .temperature=1 };
+		
+			simulation( Ply, parameters, r_init, 1, sim_number );
 			printf("simulation() finished\n");
-			//fflush(stdout);
-			mean_Rg += 0.001*results.mean_Rg;
-			mean_r_com += 0.001*results.mean_r_com;
-			fprintf(fp,"%d\t%lf\t%lf\n", N_tot, results.mean_Rg, results.mean_r_com);
 
 			free(Ply);
 			free(r_init);
 		}
 	}
 
-	fclose(fp);
+	
 	
 
 }

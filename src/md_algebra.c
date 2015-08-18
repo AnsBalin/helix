@@ -6,7 +6,7 @@
 void mat_multiply_sym_A_x( double* mat, int N, double* x, double* y ){
 	
 	/* Takes NxN matrix A, and assumes it is symmetric */
-	// This is marginally faster for N ~ O(1000)
+	// This is marginally faster than mat_multiply_A_x() for N ~ O(1000)
 	double* A = mat;
 	double a;
 
@@ -39,7 +39,10 @@ void mat_multiply_A_x( double* mat, int N, double* x, double* y ){
 
 }
 
+
 int mat_threshhold( double* mat, int N, double thresh, int** overlap_inds_result ){
+
+	/* This is from a bygone era and can largely be ignored */
 
 	// Returns array containing indices i,j, s.t. i>j
 	// for A_ij < thresh. expands array in amortised time

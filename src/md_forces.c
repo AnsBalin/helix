@@ -11,38 +11,46 @@ void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, do
 		printf("r_ij fail\n");
 	}
 
-
- 	for (int i = 0; i < N; ++i)
-	{
-		for (int j = i+1; j < N; ++j)
-		{		
-
-			if( r_ij[ squ(i,j,N) ] <= q0 ){
-				repel_old( i, j, r_ij[squ(i,j,N)], f, r );
-			}
-		}
-	}
+	/* 	Old repel function exerts mutual force between all monomers irrespective of type
+		New repel function will push normal monomers off perscribed ones (with twice the force) */
  	
- 	// repel( PlyList, numPolymers, r, f, r_ij, N  );
+ 	// for (int i = 0; i < N; ++i)
+	// {
+	// 	for (int j = i+1; j < N; ++j)
+	// 	{		
+	// 		if( r_ij[ squ(i,j,N) ] <= MD_q0 ){
+	// 			repel_old( i, j, r_ij[squ(i,j,N)], f, r );
+	// 		}
+	// 	}
+	// }
+ 	
+ 	repel( PlyList, numPolymers, r, f, r_ij, N  );
  	attract( PlyList, numPolymers, r, f, r_ij, N );
+
+ 	/* We need to add force f = 6*pi*mu v to monomers perscribed to move at speed v */
+ 	prescribedForces( PlyList, numPolymers, r, f, r_ij, N );
 
 }
 
 void repel_old( int i, int j, double r_ij, double* f, double* r ){
+
+	/* This function is depricated and does not support simulations containing
+		monomers with perscribed motion. */
 
 	double* r_diff = malloc( DIM*sizeof(double));
 	double force;
 	double r_ij_renorm = r_ij;
 
 	force = softsphere( r_ij_renorm );
-	//force = (force>hook(2*q0)) ? hook(2*q0) : force;
+	//force = (force>hook(2*MD_q0)) ? hook(2*MD_q0) : force;
 	
 
 	// r_diff points from rj to ri
-	FOR_ALL_K r_diff[k] = r[ DIM*i + k ] - r[ DIM*j + k ];
-	FOR_ALL_K f[ DIM*i + k ] +=  force*r_diff[k];
-	FOR_ALL_K f[ DIM*j + k ] += -force*r_diff[k];
-
+	FOR_ALL_K {
+		r_diff[k] 		 =  r[ DIM*i + k ] - r[ DIM*j + k ];
+		f[ DIM*i + k ] 	+=  force*r_diff[k];
+		f[ DIM*j + k ] 	+= -force*r_diff[k];
+	}
 
 	free(r_diff);
 
@@ -51,26 +59,37 @@ void repel_old( int i, int j, double r_ij, double* f, double* r ){
 void repel( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N  ){
 
 	double* r_diff = malloc( DIM*sizeof(double));
-	double force;
-	int numAtomsP, numAtomsQ, forceP, forceQ, p1, p2;
+	double force, separation;
+	int numAtomsP, numAtomsQ, perscribedP, perscribedQ, p1, p2;
 	
 	for (int p = 0; p < numPolymers; ++p){
+ 		
  		numAtomsP = (PlyList+p)->numAtoms;
- 		forceP = (PlyList+p)->FORCE;
+ 		perscribedP = (PlyList+p)->perscription;
+ 		
  		for (int q = p; q < numPolymers; ++q){
+ 			
  			numAtomsQ = (PlyList+q)->numAtoms;
- 			forceQ = (PlyList+q)->FORCE;
+ 			perscribedQ = (PlyList+q)->perscription;
 
- 			if (forceP+forceQ){
+ 			if ( !perscribedP || !perscribedQ ){
 	 			for (int i = 0; i < numAtomsP; ++i){
 	 				p1 = (PlyList+p)->firstAtomID + i;
- 					for (int j = ((p==q)? i : 0); j < numAtomsQ; ++j){
- 						p2 = (PlyList+q)->firstAtomID + j;
- 						force = softsphere( r_ij[squ(p1,p2,N)] );
+ 					for (int j = ((p==q)? i+1 : 0); j < numAtomsQ; ++j){
  						
- 						FOR_ALL_K r_diff[k] = r[ DIM*p1 + k ] - r[ DIM*p2 + k ];
-						FOR_ALL_K f[ DIM*p1 + k ] +=  forceP*(2 - forceQ)*force*r_diff[k];
-						FOR_ALL_K f[ DIM*p2 + k ] += -forceQ*(2 - forceP)*force*r_diff[k];
+ 						p2 = (PlyList+q)->firstAtomID + j;
+ 						separation = r_ij[ squ(p1,p2,N) ];
+ 						if( separation <= MD_q0 ){
+ 							force = softsphere( separation );
+ 							
+
+							FOR_ALL_K {
+								r_diff[k] = r[ DIM*p1 + k ] - r[ DIM*p2 + k ];
+								/* Apologies for this somewhat complicated logic */
+								f[ DIM*p1 + k ] +=  (!perscribedP)*(2 - !perscribedQ)*force*r_diff[k];
+								f[ DIM*p2 + k ] += -(!perscribedQ)*(2 - !perscribedP)*force*r_diff[k];
+							}
+						}
  					}
  				}
  			}
@@ -86,12 +105,13 @@ void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* 
 	double* r_diff = malloc( DIM*sizeof(double));
 	double force;
 	int p1, p2;
-	int numAtoms;
+	int numAtoms, perscribed;
 
 	for (int p = 0; p < numPolymers; ++p)
  	{
  		numAtoms = (PlyList+p)->numAtoms;
- 		if( (PlyList+p)->FORCE ){
+ 		perscribed = (PlyList+p)->perscription;
+ 		if( !perscribed ){
  			for (int i = 0; i < numAtoms-1; ++i)
  			{
 
@@ -99,11 +119,13 @@ void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* 
  				p2 = p1 + 1;
 
  				force = fene( r_ij[ N*p1 + p2 ] );
- 				//if(r_ij[N*p1 + p2]>1.5) printf("%f\n", force);
-
- 				FOR_ALL_K r_diff[k]  =  r[  DIM*p1 + k ] - r[  DIM*p2 + k];
-				FOR_ALL_K f[ DIM*p1 + k ] +=  force*r_diff[k];
-				FOR_ALL_K f[ DIM*p2 + k ] += -force*r_diff[k];
+ 				
+				for (int k = 0; k < DIM; ++k)
+				{
+					r_diff[k]  =  r[  DIM*p1 + k ] - r[  DIM*p2 + k];
+					f[ DIM*p1 + k ] +=  force*r_diff[k];
+					f[ DIM*p2 + k ] += -force*r_diff[k];
+				}
  			}
  		}
  	}
@@ -111,45 +133,84 @@ void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* 
  	free(r_diff);
 }
 
-/*void addNoise( Polymers* PlyList, double* r, double* f, double* r_ij, int N ){
+void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N ){
 
-	double* r_diff = malloc( DIM*sizeof(double));
-	double force;
-	int p1;
+// 	for (int p = 0; p < numPolymers; ++p)
+//  	{
+//  		numAtoms = (PlyList+p)->numAtoms;
+//  		if( (PlyList+p)->FORCE ){
+//  			for (int i = 0; i < numAtoms-1; ++i)
+//  			{
+
+//  				p1 = (PlyList+p)->firstAtomID + i;
+	
+// 				switch( (PlyList+p)->PERSCRIPTION ){
+
+// 					case HELIX:
+
+
+
+// 					case default:
+
+
+
+// 				} 				
+
+
+//  			}
+//  		}
+//  	}
+
+}
+
+
+void calc_dw( Polymers* PlyList, int numPolymers, double* dw, int N_tot ){
+
+	/* dw is a Gaussian vector with:
+			mean = 0.0
+			var  = 1.0 
+
+		For monomers with perscribed motion, dw = 0 */
+	
+	int numAtoms, perscribed;
+	int n=0;
 
 	for (int p = 0; p < numPolymers; ++p)
- 	{
- 		numAtoms = (PlyList+p)->numAtoms;
- 		if( (PlyList+p)->NOISE ){
- 			for (int i = 0; i < numAtoms-1; ++i)
- 			{
- 				p1 = (PlyList+p)->firstAtomID + i;
- 				FOR_ALL_K f[ DIM*p1 + k ] += gaussian( ((PlyList+p)->noise_factor) );
-
- 			}
- 		}
- 	}
-
-
-}*/
-
-
-void calc_dw( double* dw, int N_tot ){
-
-	for (int n = 0; n < 3*N_tot; ++n)
 	{
-		dw[n] = gaussian( 1.0 );
+		
+		perscribed = (PlyList+p)->perscription;
+		
+		if ( !perscribed )
+		{
+			numAtoms = (PlyList+p)->numAtoms;
+			for (int i = 0; i < numAtoms; ++i)
+			{
+				FOR_ALL_K dw[DIM*n+k] = gaussian( 1.0 );
+				n++;
+			}
+		}
+		else{
+			numAtoms = (PlyList+p)->numAtoms;
+			for (int i = 0; i < numAtoms; ++i)
+			{
+				FOR_ALL_K dw[DIM*n+k] = 0.0;
+				n++;
+			}
+		}
+
+		
 	}
+
+	
 
 }
 
 
 double gaussian( double sigma ){
 
-  // Applies Box-Muller transform to generate gaussian white noise
-  // Adapted from wikipedia page (March 2015)
+  /* 	Applies Box-Muller transform to generate gaussian white noise
+   		Adapted from wikipedia page (March 2015) */
   
-
   static double z0, z1;
   static int generate=0;
   //double epsilon = DBL_MIN;
@@ -166,8 +227,8 @@ double gaussian( double sigma ){
   
   } while( u1 == 0.0 );
 
-  z0 = sqrt( -2.0 * log(u1) ) * cos( TWOPI * u2 ); 
-  z1 = sqrt( -2.0 * log(u1) ) * sin( TWOPI * u2 );
+  z0 = sqrt( -2.0 * log(u1) ) * cos( MD_TWOPI * u2 ); 
+  z1 = sqrt( -2.0 * log(u1) ) * sin( MD_TWOPI * u2 );
 
   return z0 * sigma;
 
@@ -185,32 +246,23 @@ double softsphere( double r ){
 
 int compute_r_ij( double* r, double* r_ij, int numAtoms ){
 	
+	/*  NOTE Consider triangular for loop so symmetric elements of r_ij need not be computed twice. 
+		In fact... if j>i always in the future, lower elements need not be computed at all...? */
+
 	double *ri, *rj, *r_diff;
 	double rix, riy, riz, rjx, rjy, rjz;
 	r_diff = malloc( DIM*sizeof(double));
 	for (int i = 0; i < numAtoms; ++i)
-	{
-		//ri = r + DIM*i;
+	{	
 		rix = r[DIM*i];
 		riy = r[DIM*i+1];
-		riz = r[DIM*i+2];
-
+		riz = (DIM==3 ? r[DIM*i+2] : 0.0);
 		for (int j = 0; j < numAtoms; ++j)
 		{
 			rjx = r[DIM*j];
 			rjy = r[DIM*j+1];
-			rjz = r[DIM*j+2];
-
-			//rj = r + DIM*j;
-			//VSub( r_diff, ri, rj );
-			//r_ij[ squ(i,j,numAtoms) ] = sqrt(VSqr( r_diff )); 
+			rjz = (DIM==3 ? r[DIM*j+2] : 0.0);
 			r_ij[ squ(i,j,numAtoms) ] = sqrt( (rix-rjx)*(rix-rjx) + (riy-rjy)*(riy-rjy) + (riz-rjz)*(riz-rjz) );
-			
-			/*if(r_ij[squ(i,j,numAtoms)] > 2.0){
-				free(r_diff);
-				return squ(i,j,numAtoms) + 1;
-
-			}*/
 
 		}
 
@@ -219,18 +271,20 @@ int compute_r_ij( double* r, double* r_ij, int numAtoms ){
 
 	return 0;
 
-
 }
 
 double hook( double r ){
   
   /* Hookean spring F = -k*r */
+  /*  NOTE Currently no spring constant implemented */
   return -r;
    
 }
 
 double fene( double rr ){
 
+	/* 	NOTE I just noticed that f_max is const for all runtime. Consider making rr_0 and f_max both
+		global constants to avoid revaluation of f_max on every call. */
 	const static double rr_0 = 1.5*1.5;
 	double f_max = 30*rr_0*sqrt(0.6*rr_0)/(0.6*rr_0-rr_0);
   	return rr > 0.6*rr_0 ? f_max : 30*rr_0*sqrt(rr)/(rr-rr_0);
@@ -239,30 +293,34 @@ double fene( double rr ){
 
 void calcD( double* r_arr, double* r_ij, double* D, int N, int TENSOR ){
 
-	double a,r,rr, r1, r2,C1,C2,C3;
-	a = q0/2.0;
+	/*  */
+	double a, r, rr, r1, r2, C1, C2, C3;
+	
+	a = MD_q0/2.0; // a is the 'radius' where MD_q0 is the separation that minimises WCA 
 
 	switch ( TENSOR ){
-
 		case NOHI:
 
+			/* NOTE for NOHI we don't need to evaluate this every timestep. We can initialise D as diag
+			   and then add the corrections only in the +HI cases */
 			for (int i = 0; i < DIM*N; ++i)
 			{
 				D[squ(i,i,DIM*N)] = (4.0 / (3.0*a));
 			}
 			break; 
 
-		/* I got rid of case OSEEN altogether */ 
-		case ROTNE:
+		/* I got rid of case OSEEN altogether... we will never use it */ 
+		case OSEEN:
 
-			for (int i = 0; i < N; ++i)
-			{
-				for (int n = 0; n < DIM; ++n)
-				{
-					for (int j = 0; j < N; ++j)
-					{
+		case ROTNE2:
+			/* TYLER Add ROTNE2 here, see below for 3D implementation */
 
-						
+		case ROTNE3:
+
+			for (int i = 0; i < N; ++i){
+				for (int n = 0; n < DIM; ++n){
+					for (int j = 0; j < N; ++j){
+
 						r = r_ij[ squ(i,j,N) ];
 						rr =  r*r;
 
@@ -274,17 +332,9 @@ void calcD( double* r_arr, double* r_ij, double* D, int N, int TENSOR ){
 						{
 							r1 = r_arr[DIM*i+n] - r_arr[DIM*j+n];
 							r2 = r_arr[DIM*i+m] - r_arr[DIM*j+m];
-							if( r >= 2.0*a ) {
+							if( r >= 2.0*a ) 	D[rank4(i,j,n,m,N)] = I(i,j) ? I(n,m) : (1-I(i,j))*( 3.0*a/(4.0*r) )*( C1*I(n,m) + C2*r1*r2/rr );
+							else 				D[rank4(i,j,n,m,N)] = I(i,j) ? I(n,m) : (1-I(i,j))*( C3*I(n,m) + (3.0/(32.0*a))*r1*r2/r );
 
-								D[rank4(i,j,n,m,N)] = I(i,j) ? I(n,m) : (1-I(i,j))*( 3.0*a/(4.0*r) )*( C1*I(n,m) + C2*r1*r2/rr );
-							}
-							else{
-
-								D[rank4(i,j,n,m,N)] = I(i,j) ? I(n,m) : (1-I(i,j))*( C3*I(n,m) + (3.0/(32.0*a))*r1*r2/r );
-								
-							}
-
-							
 						}
 					}
 				}
@@ -303,6 +353,10 @@ void calcD( double* r_arr, double* r_ij, double* D, int N, int TENSOR ){
 }
 
 int calcB( double* D, int N, double* B ){
+
+	/* 	Uses the NAG cholesky decomposition to ensure <B.B> = D 
+		Documentation: http://www.nag.co.uk/numeric/cl/manual/pdf/F07/f07fdc.pdf 
+		Returns 1 if D is not positive definite, 0 for success */
 	double* a = malloc( N*N*sizeof(double) );
 	NagError fail;
 	INIT_FAIL(fail);
@@ -325,23 +379,12 @@ int calcB( double* D, int N, double* B ){
 
 	f07fdc( order, uplo, n, a, pda, &fail );
 
-	/*
-	if( fail.code == NE_POS_DEF ){
-
-		printf("Error! Matrix not positive-definite!\n");
-
-	}else{
-
-		printf("Success!!!!\n");
-	}*/
-
+	/* NOTE Consider passing B directly to Cholesky? This might marginally reduce overhead */
 	for (int i = 0; i < n*n; ++i)
 	{
 		B[i] = a[i];
 	}
-
 	free(a);
-
 	return fail.code == NE_POS_DEF;
-
 }
+
