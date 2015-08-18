@@ -1,5 +1,1 @@
-lalalal
-# helix
-
-
-RUSS HAS MADE CHANGES TO THIS FILE
+I will write some compiling notes and documentation here
