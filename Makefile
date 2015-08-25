@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=
 LDFLAGS=-std=c99
-SOURCES=src/md_test.c src/md_init.c src/md_algebra.c src/md_forces.c src/md_simulation.c src/md_io.c
+SOURCES=src/md_main.c src/md_init.c src/md_algebra.c src/md_forces.c src/md_simulation.c src/md_io.c
 OBJECTS=$(SOURCES: .c=.o)
 EXECUTABLE=md_out
 NAGCDIR=/opt/NAG/clmi623dgl

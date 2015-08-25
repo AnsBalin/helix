@@ -16,7 +16,7 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 
 	/* Count the total # of monomers in the simulation */
 	for (int i = 0; i < numPolymers; ++i) N_tot += Ply[i].numAtoms;
-		
+	printf("---N_tot = %d\n", N_tot);
 	char filenameR[sizeof "dat/R_XXX_XX.dat"]; 
 	sprintf(filenameR, "dat/R_%03d_%02d.xyz", N_tot, simnum);
 	fp = fopen(filenameR,"w");
@@ -66,6 +66,7 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 	double a1 = MD_dt/MD_zeta, a2 = sqrt( 2.0*MD_dt );
 	static int update_t=0;
 	int calcB_failure = 0;
+	int index;
 
 	/* Bonds, soft-sphere repulsions, and velocity-perscribed forces calculated here */
 	computeForces( Ply, numPolymers, r, f, r_ij, N_tot );
@@ -92,11 +93,33 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 		mat_multiply_A_x( B, DIM*N_tot, dw, Bdw );
 		
 		double dxtmp=0;
-		for (int n = 0; n < DIM*N_tot; ++n)
+		for (int p = 0; p < numPolymers; ++p)
 		{
-			dxtmp = a1*Df[n] + a2*Bdw[n]; 
-			r[n]+= dxtmp;
+
+
+			
+			switch((Ply+p)->perscription){
+				case 0:
+					for (int n = 0; n < DIM*((Ply+p)->numAtoms); ++n)
+					{			
+						index = DIM*((Ply+p)->firstAtomID) + n;		
+						dxtmp = a1*Df[index] + a2*Bdw[index]; 
+						r[index] += dxtmp;
+					}
+					break;
+				case HELIX:
+					for (int n = 0; n < DIM*((Ply+p)->numAtoms); ++n)
+					{
+
+						index = DIM*((Ply+p)->firstAtomID) + n;		
+						r[index]+= a1*f[index];
+					}						
+					break;
+
+			}
+			
 		}
+		
 
 		free(Df);
 		free(Bdw);

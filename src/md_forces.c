@@ -111,7 +111,7 @@ void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* 
  	{
  		numAtoms = (PlyList+p)->numAtoms;
  		perscribed = (PlyList+p)->perscription;
- 		if( !perscribed ){
+ 		if( perscribed == 0 ){
  			for (int i = 0; i < numAtoms-1; ++i)
  			{
 
@@ -134,32 +134,41 @@ void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* 
 }
 
 void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N ){
+	double w, v, a, l;
+	int numAtoms, p1;
 
-// 	for (int p = 0; p < numPolymers; ++p)
-//  	{
-//  		numAtoms = (PlyList+p)->numAtoms;
-//  		if( (PlyList+p)->FORCE ){
-//  			for (int i = 0; i < numAtoms-1; ++i)
-//  			{
+	for (int p = 0; p < numPolymers; ++p)
+ 	{
+ 		numAtoms = (PlyList+p)->numAtoms;
+ 		
+ 			
+ 		switch( (PlyList+p)->perscription ){
+				
+				case 0:
 
-//  				p1 = (PlyList+p)->firstAtomID + i;
-	
-// 				switch( (PlyList+p)->PERSCRIPTION ){
+					break;
 
-// 					case HELIX:
+				case HELIX:
+					w = (PlyList+p)->h_w;
+					v = (PlyList+p)->h_v;
+					for (int i = 0; i < numAtoms; ++i)
+ 					{
+	 					p1 = (PlyList+p)->firstAtomID + i;
+	 					f[ DIM*p1 + 0 ] = MD_zeta * w*r[ DIM*p1 + 1 ];
+	 					f[ DIM*p1 + 1 ] = MD_zeta *-w*r[ DIM*p1 + 0 ];	
+	 					f[ DIM*p1 + 2 ] = MD_zeta * v;
+					}
+					break;
+
+				default:
+					break;
 
 
+		} 				
 
-// 					case default:
-
-
-
-// 				} 				
-
-
-//  			}
-//  		}
-//  	}
+ 		
+ 	}
+ 	
 
 }
 

@@ -29,7 +29,7 @@
 #define MD_q0 1.12246204831
 #define MD_q0_2 1.25992104989
 #define MD_fene_rr0 2.25 // This is r0^2 where the r0 in the fene potential is 1.5
-#define MD_dt 0.00004
+#define MD_dt 0.0001
 #define MD_zeta 1
 #define MD_kT 1.0 // This currently doesn't enter into the code anywhere... 
 #define MD_TWOPI 6.28318530718
@@ -43,9 +43,13 @@ typedef struct{
 
   unsigned int  numAtoms, 
                 firstAtomID, 
-                perscription; // NORMAL (=0), HELIX (=1), can add more later
-  double spring_constant, radius; // spring constant used if NOISE is hookean
-
+                perscription;     // NORMAL (=0), HELIX (=1), can add more later
+  double        spring_constant,  // Currently unused
+                radius,           // Currently unused
+                h_w,              // helix frequency
+                h_v,              // helix velocity
+                h_R,              // helix radius
+                h_l;              // helix pitch [cos(h_l z), sin(h_l z), z]
 } Polymers;
 
 typedef struct{

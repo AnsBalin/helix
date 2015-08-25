@@ -27,7 +27,7 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
       Need to fix this next. */
   
   double* r_new = (double*) malloc( DIM*sizeof(double) );
-  double theta,phi;
+  double theta,phi, a, R, l, Dz, z;
 
   switch(SHAPE)
   {
@@ -47,6 +47,26 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
       break;
 
     case HELIX:
+
+      /* For inter-particle spacing of a, the z-spacing must be:
+                    dz = a/√( 1 + (R*l)^2 )
+      */
+      a = MD_q0/2;
+      R = Ply->h_R;
+      l = Ply->h_l;
+      Dz = a / sqrt( 1 + R*R*l*l );
+
+      z = 0.0;
+
+      for (int n = 0; n < Ply->numAtoms; ++n)
+      {
+        r_new[0] = R*cos(l*z);
+        r_new[1] = R*sin(l*z);
+        r_new[2] = z;
+        printf("%d\t%f\n", n, r_new[1]);
+        placeAtom( n, r, r_new );
+        z += Dz;
+      }
 
       break;
 
@@ -69,7 +89,7 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
           
         }while (overlap( Ply, i, r_new, r ) != 0);
         
-        placeAtom( Ply->firstAtomID + i, r, r_new );
+        placeAtom( i, r, r_new );
       }
 
       break;
