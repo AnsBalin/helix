@@ -1,4 +1,4 @@
-I will write some compiling notes and documentation here
+I will write some compiling notes and documentation here...
 
 First of all make your own branch of the code so we can work on them independently.
 
