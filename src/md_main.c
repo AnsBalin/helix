@@ -73,58 +73,11 @@ void helix_singlePolymer(){
 
 }
 
-void helix_manyPolymers(){
-
-	int numPolymers = 10;
-	Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
-
-	
-	/* Create polymer */
-	int polymerN = 10;
-	Ply[0].numAtoms = polymerN;
-	Ply[0].firstAtomID = 0;
-	Ply[0].perscription = NORMAL;
-
-	double* r_init_poly = malloc( DIM*polymerN*sizeof(double) );
-	/* Dz =  */
-	double r0[3] = {10.0, 0.0, 10.0};
-	double Dr[3] = {1.0, 0.0, 0.0};
-	placePolymer( Ply, SAW, r_init_poly, r0, Dr, 0.0 );
+void N_colloids( int N, double L ) {
 
 
-	/* Create helix */
-	int helixN = 100;
-	Ply[1].numAtoms = helixN;
-	Ply[1].firstAtomID = polymerN;
-	Ply[1].perscription = HELIX;
-	Ply[1].h_w = 4.0;
-	Ply[1].h_v = 0.0;
-	Ply[1].h_R = 3.0;
-	Ply[1].h_l = MD_TWOPI/20.0;
+	struct Polymers colloids[1];
 
-	double* r_init_helix = malloc( DIM*helixN*sizeof(double) );
-	placePolymer( Ply+1, HELIX, r_init_helix, r0, Dr, 0.0 );
+	colloids[0].numAtoms = N;
 
-	double* r_init = malloc( DIM*(helixN + polymerN)*sizeof(double) );
-	
-	int i = 0;
-	for (int n = 0; n < DIM*polymerN; ++n) 	{
-		r_init[i] 	= r_init_poly[n];
-		i++;
-
-	}
-	for (int n = 0; n < DIM*helixN; ++n) 	{
-		r_init[i] 	= r_init_helix[n];
-		i++;
-
-	}
-
-
-	Params parameters = { .total_time = 100000, .hydro = 1, .temperature = 1};
-
-	simulation( Ply, parameters, r_init, numPolymers, 1);
-
-	free(Ply);
-	free(r_init);
-
-}
+} 
