@@ -9,10 +9,11 @@
 
 void helix_singlePolymer();
 void helix_manyPolymers();
+void N_colloids( int N, double L );
 
 int main(){
 
-	helix_singlePolymer();
+	N_colloids( 100, 10 );
 
 	return 0;
 }
@@ -85,13 +86,12 @@ void N_colloids( int N, double L ) {
 
 	double* r_init = malloc( DIM*N*sizeof(double) );
 
-
 	double r0[3] = {10.0, 0.0, 10.0}; //does nothing but needed for placePolymer
 	double Dr[3] = {1.0, 0.0, 0.0}; // DOes nothing in this case
-	placePolymer( colloids, COL, r_init, r0, Dr, 0.0 );
+	placePolymer( colloids, COL, r_init, r0, Dr, L );
 
 	Params parameters = { .total_time = 10000, .hydro = 0, .temperature = 1, .size=L };
-
+	printf("hi...\n");
 	simulation( colloids, parameters, r_init, numPolymers, 1);
 
 	free(colloids);

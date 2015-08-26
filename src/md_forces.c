@@ -1,6 +1,8 @@
 #include "hdr/md_forces.h"
 #include "hdr/md_defs.h"
 
+
+
 void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N ){
 	
 	
@@ -141,6 +143,7 @@ void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f,
  	{
  		numAtoms = (PlyList+p)->numAtoms;
  		
+
  			
  		switch( (PlyList+p)->perscription ){
 				
