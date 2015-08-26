@@ -25,7 +25,7 @@ void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, do
 	// }
  	
  	repel( PlyList, numPolymers, r, f, r_ij, N  );
- 	attract( PlyList, numPolymers, r, f, r_ij, N );
+ 	//attract( PlyList, numPolymers, r, f, r_ij, N );
 
  	/* We need to add force f = 6*pi*mu v to monomers perscribed to move at speed v */
  	prescribedForces( PlyList, numPolymers, r, f, r_ij, N );

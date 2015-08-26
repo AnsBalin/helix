@@ -27,7 +27,8 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
       Need to fix this next. */
   
   double* r_new = (double*) malloc( DIM*sizeof(double) );
-  double theta,phi, a, R, l, Dz, z;
+  double theta,phi, a, R, l, Dz, z, L;
+
 
   switch(SHAPE)
   {
@@ -93,6 +94,24 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
       }
 
       break;
+
+    case COL:
+      
+      L = param1;
+      for (int i = 0; i < Ply->numAtoms; ++i)
+      {
+        do { 
+
+          r_new[0] = L*((double)rand()/(double)RAND_MAX);
+          r_new[1] = L*((double)rand()/(double)RAND_MAX);
+          r_new[2] = L*((double)rand()/(double)RAND_MAX);
+
+        }while(overlap( Ply, i, r_new, r) != 0);
+        placeAtom( i, r, r_new );
+      }
+
+      break;  
+
 
     default:
       printf("Did not supply correct SHAPE.\n");

@@ -76,8 +76,25 @@ void helix_singlePolymer(){
 void N_colloids( int N, double L ) {
 
 
-	struct Polymers colloids[1];
+	int numPolymers = 1;
+	Polymers* colloids = malloc( numPolymers*sizeof(Polymers) );
 
 	colloids[0].numAtoms = N;
+	colloids[0].firstAtomID = 0;
+	colloids[0].perscription = NORMAL;
+
+	double* r_init = malloc( DIM*N*sizeof(double) );
+
+
+	double r0[3] = {10.0, 0.0, 10.0}; //does nothing but needed for placePolymer
+	double Dr[3] = {1.0, 0.0, 0.0}; // DOes nothing in this case
+	placePolymer( colloids, COL, r_init, r0, Dr, 0.0 );
+
+	Params parameters = { .total_time = 10000, .hydro = 0, .temperature = 1, .size=L };
+
+	simulation( colloids, parameters, r_init, numPolymers, 1);
+
+	free(colloids);
+	free(r_init);
 
 } 

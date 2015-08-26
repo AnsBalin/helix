@@ -6,7 +6,7 @@
 #define NORMAL 0
 #define HELIX 1
 #define SAW 2
-
+#define COL 3
 
 // HI tensors ... WARNING: Only use ROTNE
 #define NOHI 0
@@ -55,7 +55,7 @@ typedef struct{
 typedef struct{
 
   int total_time, hydro;
-  double temperature;
+  double temperature, size;
 
 } Params;
 

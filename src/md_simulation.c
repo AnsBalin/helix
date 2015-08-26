@@ -9,6 +9,7 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 	int total_time = parameters.total_time;
 	int hydro = parameters.hydro;
 	double temperature = parameters.temperature;
+	double size = parameters.size;
 
 	int tsave = 100; // Output/save every tsave steps
 	int N_tot=0;
@@ -36,7 +37,7 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 	{
 
 		/* all the action happens in here */
-		update( Ply, numPolymers, r, f, dw, r_ij, D, B, N_tot, hydro );
+		update( Ply, numPolymers, r, f, dw, r_ij, D, B, N_tot, hydro, size );
 		
 		if( t % tsave == 0 ){
 			
@@ -60,7 +61,7 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 
 }
 
-void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, double* r_ij, double* D, double* B, int N_tot, int hydro ){
+void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, double* r_ij, double* D, double* B, int N_tot, int hydro, double L ){
 	
 	/* These are prefactors to D*f and B*dw respectively. Consider making global if zeta never changes */
 	double a1 = MD_dt/MD_zeta, a2 = sqrt( 2.0*MD_dt );
@@ -140,6 +141,24 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 	for (int n = 0; n < DIM*N_tot; ++n)
 	{
 		f[n] = 0.0;
+	}
+
+	double rn;
+	for (int n = 0; n < DIM*N_tot; ++n)
+	{
+		rn = r[n];
+		if( rn < L && rn >=0 ){
+
+
+		}
+		else if ( rn >= L)	
+		{
+			r[n] -= L;
+		}
+		else{
+
+			r[n] += L;
+		}
 	}
 
 }
