@@ -41,7 +41,7 @@ void helix_singlePolymer(){
 	Ply[1].numAtoms = helixN;
 	Ply[1].firstAtomID = polymerN;
 	Ply[1].perscription = HELIX;
-	Ply[1].h_w = 4.0;
+	Ply[1].h_w = 0.0;
 	Ply[1].h_v = 0.0;
 	Ply[1].h_R = 3.0;
 	Ply[1].h_l = MD_TWOPI/20.0;
@@ -64,7 +64,7 @@ void helix_singlePolymer(){
 	}
 
 
-	Params parameters = { .total_time = 100000, .hydro = 1, .temperature = 1};
+	Params parameters = { .total_time = 400000, .hydro = 0, .temperature = 1};
 
 	simulation( Ply, parameters, r_init, numPolymers, 1);
 

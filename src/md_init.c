@@ -28,7 +28,7 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
   
   double* r_new = (double*) malloc( DIM*sizeof(double) );
   double theta,phi, a, R, l, Dz, z;
-
+  int ii = 0;
   switch(SHAPE)
   {
 
@@ -52,18 +52,17 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
                     dz = a/√( 1 + (R*l)^2 )
       */
       a = MD_q0/2;
-      R = Ply->h_R;
+      R = (Ply->h_R);
       l = Ply->h_l;
       Dz = a / sqrt( 1 + R*R*l*l );
 
-      z = 0.0;
+      z = -(Dz*Ply->numAtoms)/2;
 
       for (int n = 0; n < Ply->numAtoms; ++n)
       {
-        r_new[0] = R*cos(l*z);
-        r_new[1] = R*sin(l*z);
+        r_new[0] = (R /*/sqrt( (1.0/25.0)*(Ply->h_w)*(Ply->h_w) + 1 )*/)*cos(l*z);
+        r_new[1] = (R /*/sqrt( (1.0/25.0)*(Ply->h_w)*(Ply->h_w) + 1 )*/)*sin(l*z);
         r_new[2] = z;
-        printf("%d\t%f\n", n, r_new[1]);
         placeAtom( n, r, r_new );
         z += Dz;
       }
@@ -73,7 +72,7 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
     case SAW:
 
 
-      placeAtom( Ply->firstAtomID, r, r0);
+      placeAtom( 0, r, r0);
       for( int i=1; i<Ply->numAtoms; ++i ){
         do {
           phi = MD_TWOPI * (double)rand()/(double)RAND_MAX;
@@ -93,7 +92,22 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
       }
 
       break;
+    case TRACER:
+      
+      for (int n = 0; n < (int) sqrt(Ply->numAtoms); ++n)
+      { 
+        for (int m = 0; m < (int) sqrt(Ply->numAtoms); ++m)
+        {
+          r_new[0] = (double) m - sqrt(Ply->numAtoms)/2;
+          r_new[1] = (double) n - sqrt(Ply->numAtoms)/2;
+          r_new[2] = 19.0;
+          placeAtom( ii, r, r_new );
+          printf("%d\t%f\n", ii,r_new[0]);
+          ++ii;
+        }
+      }
 
+      break;
     default:
       printf("Did not supply correct SHAPE.\n");
       break;

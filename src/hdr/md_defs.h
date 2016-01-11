@@ -6,6 +6,7 @@
 #define NORMAL 0
 #define HELIX 1
 #define SAW 2
+#define TRACER 3
 
 
 // HI tensors ... WARNING: Only use ROTNE
@@ -29,13 +30,15 @@
 #define MD_q0 1.12246204831
 #define MD_q0_2 1.25992104989
 #define MD_fene_rr0 2.25 // This is r0^2 where the r0 in the fene potential is 1.5
-#define MD_dt 0.0001
+#define MD_dt 0.000001
 #define MD_zeta 1
 #define MD_kT 1.0 // This currently doesn't enter into the code anywhere... 
 #define MD_TWOPI 6.28318530718
 
 // Dimensions... so far untested in 2D
 #define DIM 3
+
+
 
 // Position data is stored in r[3*N*DIM], and a list of Polymers described how the N particles are partitioned
 // into molecules with different properties

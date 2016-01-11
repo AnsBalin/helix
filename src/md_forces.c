@@ -1,7 +1,7 @@
 #include "hdr/md_forces.h"
 #include "hdr/md_defs.h"
 
-void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N ){
+void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N, double t ){
 	
 	
 	int r_ij_fail;
@@ -24,11 +24,11 @@ void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, do
 	// 	}
 	// }
  	
- 	repel( PlyList, numPolymers, r, f, r_ij, N  );
- 	attract( PlyList, numPolymers, r, f, r_ij, N );
-
+ 	//repel( PlyList, numPolymers, r, f, r_ij, N  );
+ 	//attract( PlyList, numPolymers, r, f, r_ij, N );
+	//bending( PlyList, numPolymers, r, f, r_ij, N );
  	/* We need to add force f = 6*pi*mu v to monomers perscribed to move at speed v */
- 	prescribedForces( PlyList, numPolymers, r, f, r_ij, N );
+ 	prescribedForces( PlyList, numPolymers, r, f, r_ij, N, t );
 
 }
 
@@ -72,7 +72,7 @@ void repel( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_
  			numAtomsQ = (PlyList+q)->numAtoms;
  			perscribedQ = (PlyList+q)->perscription;
 
- 			if ( !perscribedP || !perscribedQ ){
+ 			if ( /*!perscribedP || !perscribedQ*/ 0==0 ){
 	 			for (int i = 0; i < numAtomsP; ++i){
 	 				p1 = (PlyList+p)->firstAtomID + i;
  					for (int j = ((p==q)? i+1 : 0); j < numAtomsQ; ++j){
@@ -82,12 +82,14 @@ void repel( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_
  						if( separation <= MD_q0 ){
  							force = softsphere( separation );
  							
-
+ 							
 							FOR_ALL_K {
 								r_diff[k] = r[ DIM*p1 + k ] - r[ DIM*p2 + k ];
 								/* Apologies for this somewhat complicated logic */
-								f[ DIM*p1 + k ] +=  (!perscribedP)*(2 - !perscribedQ)*force*r_diff[k];
-								f[ DIM*p2 + k ] += -(!perscribedQ)*(2 - !perscribedP)*force*r_diff[k];
+								//f[ DIM*p1 + k ] +=  (!perscribedP)*(2 - !perscribedQ)*force*r_diff[k];
+								//f[ DIM*p2 + k ] += -(!perscribedQ)*(2 - !perscribedP)*force*r_diff[k];
+								f[ DIM*p1 + k ] +=  force*r_diff[k];
+								f[ DIM*p2 + k ] += -force*r_diff[k];
 							}
 						}
  					}
@@ -111,7 +113,7 @@ void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* 
  	{
  		numAtoms = (PlyList+p)->numAtoms;
  		perscribed = (PlyList+p)->perscription;
- 		if( perscribed == 0 ){
+ 		if( /*perscribed*/ 0 == 0 ){
  			for (int i = 0; i < numAtoms-1; ++i)
  			{
 
@@ -133,9 +135,72 @@ void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* 
  	free(r_diff);
 }
 
-void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N ){
-	double w, v, a, l;
+void bending( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N ){
+
+	double* r_a = malloc( DIM*sizeof(double));
+	double* r_b = malloc( DIM*sizeof(double));
+
+	double force, aa, bb, ab, a_b, tmp_a, tmp_b, f1,f2,f3, stiffness, cosBendAngle; // a^2, b^2, (ab) and a.b
+	int p1, p2, p3;
+	int numAtoms;
+
+	for (int p = 0; p < numPolymers; ++p)
+ 	{
+ 		numAtoms = (PlyList+p)->numAtoms;
+ 		//stiffness = (PlyList+p)->stiffness;
+ 		stiffness = 1000;
+ 		if( stiffness >= 1e-10 ){
+ 			//cosBendAngle = (PlyList+p)->cosBendAngle;
+ 			cosBendAngle = -1.0;
+ 			for (int i = 0; i < numAtoms-2; ++i)
+ 			{
+
+ 				p1 = (PlyList+p)->firstAtomID + i;
+ 				p2 = p1 + 1;
+ 				p3 = p2 + 1;
+
+ 				tmp_a = r_ij[squ(p1,p2,N)];
+ 				tmp_b = r_ij[squ(p2,p3,N)];
+
+ 				aa = tmp_a*tmp_a;
+ 				bb = tmp_b*tmp_b;
+ 				ab = tmp_a*tmp_b;
+ 				a_b = 0.0;
+ 				for (int k = 0; k < DIM; ++k) {
+
+ 					r_a[ k ] = r[ DIM*p1 + k ] - r[ DIM*p2 + k];
+ 					r_b[ k ] = r[ DIM*p3 + k ] - r[ DIM*p2 + k];
+ 					a_b += r_a[ k ]*r_b[ k ];
+ 				}
+
+ 				force = -(stiffness/(ab*ab))*(a_b - cosBendAngle*ab);
+ 				//printf("a_b:\t%lf\nab:\t%lf\nforce:\t%lf\n", a_b, ab, force);		
+				for (int k = 0; k < DIM; ++k)
+				{
+					
+
+					f1 = force*(r_b[k] - (a_b/aa)*r_a[k]);
+					f3 = force*(r_a[k] - (a_b/bb)*r_b[k]);
+					f2 = -f1 - f2;
+					f[ DIM*p1 + k ] +=  f1;
+					f[ DIM*p3 + k ] +=  f3;
+					f[ DIM*p2 + k ] +=  f2;
+				}
+
+ 			}
+ 		}
+ 	}
+
+ 	free(r_a);
+ 	free(r_b);
+
+
+}
+
+void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N, double t ){
+	double w, v, a, l, R;
 	int numAtoms, p1;
+
 
 	for (int p = 0; p < numPolymers; ++p)
  	{
@@ -151,15 +216,43 @@ void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f,
 				case HELIX:
 					w = (PlyList+p)->h_w;
 					v = (PlyList+p)->h_v;
+					R = (PlyList+p)->h_R;
+					l = (PlyList+p)->h_l;
+					double a = MD_q0/2;
+					double Dz = a / sqrt( 1 + R*R*l*l );
+
+					double x, y, radius, phase;
+					phase = 0.0;
+					for (int i = 0; i < numAtoms; ++i){
+						x = r[ DIM*p1 + 0 ];
+						y = r[ DIM*p1 + 1 ];
+						radius = sqrt(x*x + y*y);
+						//phase += ( -0.7 < x/r < 0.7) ? (acos( x/r )-l*i*Dz - w*t) : (asin( y/r )-l*i*Dz - w*t);
+						//phase += (atan2( y/radius, x/radius )-(l*i*Dz - w*t));
+					}
+					phase = phase/numAtoms;
+					//printf("%lf\n", phase);
 					for (int i = 0; i < numAtoms; ++i)
  					{
-	 					p1 = (PlyList+p)->firstAtomID + i;
-	 					f[ DIM*p1 + 0 ] = MD_zeta * w*r[ DIM*p1 + 1 ];
-	 					f[ DIM*p1 + 1 ] = MD_zeta *-w*r[ DIM*p1 + 0 ];	
-	 					f[ DIM*p1 + 2 ] = MD_zeta * v;
+ 						p1 = (PlyList+p)->firstAtomID + i;
+ 						f[ DIM*p1 + 0 ] += -9*( r[ DIM*p1 + 0 ] - R*cos(l*i*Dz - w*t - phase) );
+ 						f[ DIM*p1 + 1 ] += -9*( r[ DIM*p1 + 1 ] - R*sin(l*i*Dz - w*t - phase) );
+ 						f[ DIM*p1 + 2 ] += -9*( r[ DIM*p1 + 2 ] - (i-numAtoms/2)*Dz - v*t);
+ 						
+ 						//x = r[ DIM*p1 + 0 ];
+ 						//y = r[ DIM*p1 + 1 ];
+ 						//radius = sqrt(x*x + y*y);
+	 					//p1 = (PlyList+p)->firstAtomID + i;
+	 					//f[ DIM*p1 + 0 ] += MD_zeta * ( w*y - ( radius - R )*x);
+	 					//f[ DIM*p1 + 1 ] += MD_zeta * (-w*x - ( radius - R )*y);	
+	 					//f[ DIM*p1 + 2 ] += MD_zeta * v;
 					}
 					break;
+				case TRACER:
 
+
+
+					break;
 				default:
 					break;
 
@@ -187,8 +280,8 @@ void calc_dw( Polymers* PlyList, int numPolymers, double* dw, int N_tot ){
 	for (int p = 0; p < numPolymers; ++p)
 	{
 		
-		perscribed = (PlyList+p)->perscription;
-		
+		//perscribed = (PlyList+p)->perscription;
+		perscribed = 0;
 		if ( !perscribed )
 		{
 			numAtoms = (PlyList+p)->numAtoms;

@@ -15,11 +15,12 @@
 #include "md_algebra.h"
 
 //void computeForces( Polymers* PlyList, int numPolymers, double temperature );
-void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N );
+void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N, double t );
 void repel_old( int i, int j, double r_ij, double* f, double* r );
 void repel( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N  );
-void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N );
+void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N, double t );
 void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N );
+void bending( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N );
 void calc_dw( Polymers* PlyList, int numPolymers, double* dw, int N_tot );
 double gaussian( double sigma );
 double softsphere( double r );

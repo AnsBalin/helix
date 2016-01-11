@@ -1,17 +1,19 @@
 CC=gcc
 CFLAGS=
 LDFLAGS=-std=c99
-SOURCES=src/md_main.c src/md_init.c src/md_algebra.c src/md_forces.c src/md_simulation.c src/md_io.c
+SOURCES=src/md_test.c src/md_init.c src/md_algebra.c src/md_forces.c src/md_simulation.c src/md_io.c
 OBJECTS=$(SOURCES: .c=.o)
 EXECUTABLE=md_out
-NAGCDIR=/opt/NAG/clmi623dgl
+NAGCDIR=/home/balin/Library/NAG/cll6i24dcl
 
 all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ -I${NAGCDIR}/include \
 					-m64 ${NAGCDIR}/lib/libnagc_nag.a \
-					-ldl -lpthread -lm 
+					${NAGCDIR}/rtl/intel64/libifcore.a ${NAGCDIR}/rtl/intel64/libimf.a \
+        			${NAGCDIR}/rtl/intel64/libirc.a \
+					-ldl -lpthread -lm -fopenmp
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@

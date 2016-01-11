@@ -59,50 +59,79 @@ int main(){
 
 void simple_test(){
 
-	int N_arr[6] = {160, 80, 40, 20, 10, 5};
-	int N_tot;
-	Results results; 
-	for (int nn = 0; nn < 1 ; ++nn)
+	int numPolymers = 1;
+	Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
+
+	
+	/* Dz =  */
+	double r0[3] = {15.0, 15.0, 20.0};
+	double Dr[3] = {1.0, 0.0, 0.0};
+
+	/* Create helix */
+	int helixN = 100;
+	Ply[0].numAtoms = helixN;
+	Ply[0].firstAtomID = 0;
+	Ply[0].perscription = HELIX;
+	Ply[0].h_w = 51.2;
+	Ply[0].h_v = 0;
+	Ply[0].h_R = 4;
+	Ply[0].h_l = MD_TWOPI/10.0;
+
+	double* r_init_helix = malloc( DIM*helixN*sizeof(double) );
+	placePolymer( Ply, HELIX, r_init_helix, r0, Dr, 0.0 );
+
+	
+	/* Create plane of tracers */
+	/*int tracersN = 6;
+	Ply[1].numAtoms = tracersN*tracersN;
+	Ply[1].firstAtomID = helixN;
+	Ply[1].perscription = TRACER;
+
+	double* r_init_tracer = malloc( DIM*tracersN*tracersN*sizeof(double) );
+	placePolymer( Ply+1, TRACER, r_init_tracer, r0, Dr, 0.0 );
+
+	
+	
+
+	
+	for (int i = 0; i < DIM*(tracersN*tracersN); ++i)
 	{
-
-		N_tot = N_arr[ nn ];
-		N_tot = 50;
-		for (int sim_number = 0; sim_number < 1; ++sim_number)
-		{
-			
-			printf("%d, %d\n", N_tot, sim_number);
-			int numPolymers = 1;
-			srand(time(NULL)+sim_number);
-
-			/* Create 1 polymer */
-			Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
-			int id = 0;
-			Ply->numAtoms = N_tot/numPolymers;
-			Ply->perscription = 0;
-			Ply->firstAtomID = id;
-			id += Ply->numAtoms;
-			Ply->spring_constant = 1.0;
-			Ply->radius = 1.0;
-			
-			/* Plase it at the origin, with unit spacing according to SAW algorithm */
-			double* r_init = malloc( DIM*N_tot*sizeof(double) );
-			double r0[3] = {0.0, 0.0, 0.0};
-			double Dr[3] = {1.0, 0.0, 0.0};
-			placePolymer( Ply, SAW, r_init, r0, Dr, 0.0 );
-
-			/* Simulation parameters (NOTE temperature does nothing) */
-			Params parameters = { .total_time = 100000, .hydro =1, .temperature=1 };
-		
-			simulation( Ply, parameters, r_init, 1, sim_number );
-			printf("simulation() finished\n");
-
-			free(Ply);
-			free(r_init);
-		}
+		r_init[ii] = r_init_tracer[i];
+		printf("%f\n", r_init[i]);
+		++ii;
 	}
+	*/
 
-	
-	
+	/* Create polymer */
+	int polymerN = 0;
+	//Ply[1].numAtoms = polymerN;
+	//Ply[1].firstAtomID = helixN;
+	//Ply[1].perscription = NORMAL;
+
+	//double* r_init_poly = malloc( DIM*polymerN*sizeof(double) );
+	//placePolymer( Ply+1, SAW, r_init_poly, r0, Dr, 0.0 );
+
+	double* r_init = malloc( DIM*(helixN + polymerN)*sizeof(double) );
+	int ii = 0;
+	for (int i = 0; i < DIM*helixN; ++i)
+	{
+		r_init[ii] = r_init_helix[i];
+		++ii;
+	}
+	/*for (int i = 0; i < DIM*polymerN; ++i)
+	{
+		r_init[ii] = r_init_poly[i];
+		printf("%f\n", r_init[i]);
+		++ii;
+	}*/
+	Params parameters = { .total_time = 2000000, .hydro = 0 , .temperature = 1};
+
+	simulation( Ply, parameters, r_init, numPolymers, 1);
+
+	free(Ply);
+	free(r_init_helix);
+	//free(r_init_poly);
+	free(r_init);
 
 }
 

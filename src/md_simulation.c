@@ -10,7 +10,7 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 	int hydro = parameters.hydro;
 	double temperature = parameters.temperature;
 
-	int tsave = 100; // Output/save every tsave steps
+	int tsave = 1000; // Output/save every tsave steps
 	int N_tot=0;
 	double t0, t1, t2, t1000; 
 
@@ -27,23 +27,31 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 	allocAll( &r, &f, &dw, &D, &B, &r_ij, N_tot );
 
 	/* Initialise the positions with previously determined initial locations */
-	for (int i = 0; i < DIM*N_tot; ++i) r[i] = r_init[i];
-
+	for (int i = 0; i < DIM*N_tot; ++i) {
+		r[i] = r_init[i];
+	}
 	t0 = clock();
 	t1 = t0;
 	t2 = t0;
 	for (int t = 0; t < total_time; ++t)
 	{
-
+		/*if ( t > total_time-1000)
+		{
+			hydro=1;
+		}*/
 		/* all the action happens in here */
-		update( Ply, numPolymers, r, f, dw, r_ij, D, B, N_tot, hydro );
-		
+		update( Ply, numPolymers, r, f, dw, r_ij, D, B, N_tot, hydro, (double)t*MD_dt );
+		if( t == 1000 ){
+
+			//flowfield( N_tot, r, f );
+		}
 		if( t % tsave == 0 ){
 			
 			t1 = clock();
 			t1000 = t1 - t2;
 			printf("N: %03d\tSim: %02d\tElapsed: %.3f\tRemaining: %.3f\n", N_tot, simnum, (t1-t0)/1000000, (total_time/tsave - t/tsave)*t1000/1000000);
 			t2 = t1;
+			meanforce( r, f, N_tot );
 
 			saveXYZtofile( Ply, numPolymers, r, N_tot, fp );
 
@@ -60,8 +68,14 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 
 }
 
-void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, double* r_ij, double* D, double* B, int N_tot, int hydro ){
+void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, double* r_ij, double* D, double* B, int N_tot, int hydro, double t ){
 	
+	/* computeForces() increments f so f needs to be reset */
+	for (int n = 0; n < DIM*N_tot; ++n)
+	{
+		f[n] = 0.0;
+	}
+
 	/* These are prefactors to D*f and B*dw respectively. Consider making global if zeta never changes */
 	double a1 = MD_dt/MD_zeta, a2 = sqrt( 2.0*MD_dt );
 	static int update_t=0;
@@ -69,7 +83,7 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 	int index;
 
 	/* Bonds, soft-sphere repulsions, and velocity-perscribed forces calculated here */
-	computeForces( Ply, numPolymers, r, f, r_ij, N_tot );
+	computeForces( Ply, numPolymers, r, f, r_ij, N_tot, t );
 
 	/* Unit noise calculated here (zero for velocity-perscribed monomers) */
 	calc_dw(Ply, numPolymers, dw, N_tot);
@@ -89,8 +103,8 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 		calcD( r, r_ij, D, N_tot, ROTNE ); // NOHI, OSEEN, ROTNE2, ROTNE3 (ROTNE)
 		mat_multiply_A_x( D, DIM*N_tot, f, Df );
 
-		calcB_failure = calcB( D, DIM*N_tot, B );
-		mat_multiply_A_x( B, DIM*N_tot, dw, Bdw );
+		//calcB_failure = calcB( D, DIM*N_tot, B );
+		//mat_multiply_A_x( B, DIM*N_tot, dw, Bdw );
 		
 		double dxtmp=0;
 		for (int p = 0; p < numPolymers; ++p)
@@ -98,12 +112,12 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 
 
 			
-			switch((Ply+p)->perscription){
+			switch(/*(Ply+p)->perscription*/ 0 ){
 				case 0:
 					for (int n = 0; n < DIM*((Ply+p)->numAtoms); ++n)
 					{			
 						index = DIM*((Ply+p)->firstAtomID) + n;		
-						dxtmp = a1*Df[index] + a2*Bdw[index]; 
+						dxtmp = a1*Df[index];// + a2*Bdw[index]; 
 						r[index] += dxtmp;
 					}
 					break;
@@ -132,15 +146,133 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 		 		dr = f MD_dt + dw
 		*/
 
-		for (int n = 0; n < DIM*N_tot; ++n) r[n] += a1*f[n] + a2*dw[n]; 
+		for (int n = 0; n < DIM*N_tot; ++n) r[n] += a1*f[n];// + a2*dw[n]; 
 
 	}
 
-	/* computeForces() increments f so f needs to be reset */
-	for (int n = 0; n < DIM*N_tot; ++n)
+
+
+}
+
+void flowfield( int numAtoms, double* r, double* f ){
+
+	int grid_N, grid_M, grid_L;
+	FILE* fout = fopen("vfield.txt","w");
+	grid_N = 50;
+	grid_M = 50;
+	grid_L = 150;
+	double grid_dx = 1;
+
+	double rx, ry, rz, Rx, Ry, Rz, rr, C1,C2,C3, rf;
+	double* vx = (double*)malloc( grid_N*grid_M*sizeof(double) );
+	double* vy = (double*)malloc( grid_N*grid_M*sizeof(double) );
+	double* vz = (double*)malloc( grid_N*grid_M*sizeof(double) );
+	double a = MD_q0/2.0;
+	for (int i = 0; i < grid_M*grid_N; ++i)
 	{
-		f[n] = 0.0;
+		vx[i] = 0.0;
+		vy[i] = 0.0;
+		vz[i] = 0.0;
 	}
+
+
+	rx = -(grid_dx*(double)grid_N)/2;
+	ry = -(grid_dx*(double)grid_M)/2;
+	rz = -(grid_dx*(double)grid_L)/2;
+
+	printf("\n");
+	for (int ix = 0; ix < grid_N; ++ix)
+	{			
+		
+		for (int iy = 0; iy < grid_M; ++iy)
+		{
+			for (int iz = 0; iz < grid_L; ++iz)
+			{
+			
+			
+				for (int n = 0; n < numAtoms; ++n)
+				{
+					Rx = r[DIM*n];
+					Ry = r[DIM*n+1];
+					Rz = r[DIM*n+2];
+
+					rr =  (rx-Rx)*(rx-Rx) + (ry-Ry)*(ry-Ry) + (rz-Rz)*(rz-Rz);
+					C1 = 1 + 2.0*a*a/(3.0*rr);
+					C2 = 1 - 2.0*a*a/rr;
+					C3 = 1 - 9.0*sqrt(rr)/(32.0*a);
+
+					rf = (rx - Rx)*f[DIM*n  ] + (ry - Ry)*f[DIM*n+1] + (rz - Rz)*f[DIM*n+2];
+
+					if( rr >= 4.0*a*a ) {
+						vx[ ix*grid_M + iy ] += (3.0*a/(4.0*sqrt(rr)) )*( C1*f[DIM*n  ] + C2*rf*(rx-Rx)/rr );				
+						vy[ ix*grid_M + iy ] += (3.0*a/(4.0*sqrt(rr)) )*( C1*f[DIM*n+1] + C2*rf*(ry-Ry)/rr );
+						vz[ ix*grid_M + iy ] += (3.0*a/(4.0*sqrt(rr)) )*( C1*f[DIM*n+2] + C2*rf*(rz-Rz)/rr );
+					}
+					else{
+						vx[ ix*grid_M + iy ] += C3*f[DIM*n  ] + (3.0/(32.0*a))*rf*(rx-Rx)/sqrt(rr);
+						vy[ ix*grid_M + iy ] += C3*f[DIM*n+1] + (3.0/(32.0*a))*rf*(ry-Ry)/sqrt(rr);
+						vz[ ix*grid_M + iy ] += C3*f[DIM*n+2] + (3.0/(32.0*a))*rf*(rz-Rz)/sqrt(rr);
+				
+					}
+					
+				
+				}
+				fprintf(fout, "%.3f,%.3f,%.3f\n", vx[ ix*grid_M + iy ],vy[ ix*grid_M + iy ],vz[ ix*grid_M + iy ]);
+				rz+=grid_dx;
+			}
+
+			ry+=grid_dx;
+			rz = -(grid_dx*(double)grid_L)/2;
+			//printf("%lf ", vx[ ix*grid_M + iy ]);
+		}
+		rx+=grid_dx;
+		ry = -(grid_dx*(double)grid_M)/2;
+		//printf("\n");
+	}
+	
+	/*printf("\n----vy------\n");
+	for (int ix = 0; ix < grid_N; ++ix)
+	{			
+		
+		for (int iy = 0; iy < grid_M; ++iy)
+		{
+			printf("%.3f ", vy[ ix*grid_M + iy ]);
+		}
+		printf("\n");
+	}
+
+	printf("\n----vz------\n");
+	for (int ix = 0; ix < grid_N; ++ix)
+	{			
+		
+		for (int iy = 0; iy < grid_M; ++iy)
+		{
+			printf("%.3f ", vz[ ix*grid_M + iy ]);
+		}
+		printf("\n");
+	}*/
+
+	free(vx);
+	free(vy);
+	free(vz);
+	fclose(fout);
+
+}
+
+void meanforce( double* r, double* f, int numAtoms ){
+
+double mean_radius = 0.0;
+double torque_z = 0.0;
+double force_z = 0.0;
+
+for (int n = 0; n < numAtoms; ++n)
+{	
+	mean_radius += sqrt( r[DIM*n]*r[DIM*n] + r[DIM*n+1]*r[DIM*n+1] );
+	torque_z += f[DIM*n]*r[DIM*n+1] - f[DIM*n+1]*r[DIM*n];
+	force_z += f[DIM*n+2]; 
+}
+
+printf("%f\t%f\t%f\n", mean_radius/numAtoms, torque_z, force_z);
 
 }
 
