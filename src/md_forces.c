@@ -218,7 +218,7 @@ void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f,
 					v = (PlyList+p)->h_v;
 					R = (PlyList+p)->h_R;
 					l = (PlyList+p)->h_l;
-					double a = MD_q0/2;
+					double a = MD_q0;
 					double Dz = a / sqrt( 1 + R*R*l*l );
 
 					double x, y, radius, phase;

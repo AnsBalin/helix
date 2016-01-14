@@ -51,7 +51,7 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
       /* For inter-particle spacing of a, the z-spacing must be:
                     dz = a/√( 1 + (R*l)^2 )
       */
-      a = MD_q0/2;
+      a = MD_q0;
       R = (Ply->h_R);
       l = Ply->h_l;
       Dz = a / sqrt( 1 + R*R*l*l );

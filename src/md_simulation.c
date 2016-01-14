@@ -16,7 +16,7 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 
 	/* Count the total # of monomers in the simulation */
 	for (int i = 0; i < numPolymers; ++i) N_tot += Ply[i].numAtoms;
-	printf("---N_tot = %d\n", N_tot);
+	//printf("---N_tot = %d\n", N_tot);
 	char filenameR[sizeof "dat/R_XXX_XX.dat"]; 
 	sprintf(filenameR, "dat/R_%03d_%02d.xyz", N_tot, simnum);
 	fp = fopen(filenameR,"w");
@@ -49,7 +49,7 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 			
 			t1 = clock();
 			t1000 = t1 - t2;
-			printf("N: %03d\tSim: %02d\tElapsed: %.3f\tRemaining: %.3f\n", N_tot, simnum, (t1-t0)/1000000, (total_time/tsave - t/tsave)*t1000/1000000);
+			//printf("N: %03d\tSim: %02d\tElapsed: %.3f\tRemaining: %.3f\n", N_tot, simnum, (t1-t0)/1000000, (total_time/tsave - t/tsave)*t1000/1000000);
 			t2 = t1;
 			meanforce( r, f, N_tot );
 

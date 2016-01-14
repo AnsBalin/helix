@@ -8,13 +8,22 @@
 #include "hdr/md_algebra.h"
 
 void md_init_SinglePolymer();
-void simple_test();
+void simple_test(int in_N, double in_R, double in_l, double in_w, double in_v );
 void CholeskyTest();
 void matrixMultiplyTest();
 
-int main(){
+int main( int argc, char *argv[]  ){
 
-	simple_test();
+
+	int in_N = 1;
+	double in_R=10.0, in_l=1.0, in_w=0.0, in_v=0.0;
+	sscanf(argv[2],"%d",&in_N);
+	sscanf(argv[3],"%lf",&in_R);
+	sscanf(argv[4],"%lf",&in_w);
+	sscanf(argv[5],"%lf",&in_l);	
+	sscanf(argv[1],"%lf",&in_v);
+	printf("#\t%d\t%lf\t%lf\t%lf\t%lf\n", in_N, in_R, in_w, in_l, in_v);
+	simple_test( in_N, in_R, in_l, in_w, in_v );
 
 	return 0;
 }
@@ -57,7 +66,7 @@ int main(){
 
 //}
 
-void simple_test(){
+void simple_test(int in_N, double in_R, double in_l, double in_w, double in_v ){
 
 	int numPolymers = 1;
 	Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
@@ -68,14 +77,14 @@ void simple_test(){
 	double Dr[3] = {1.0, 0.0, 0.0};
 
 	/* Create helix */
-	int helixN = 100;
+	int helixN = in_N;
 	Ply[0].numAtoms = helixN;
 	Ply[0].firstAtomID = 0;
 	Ply[0].perscription = HELIX;
-	Ply[0].h_w = 51.2;
-	Ply[0].h_v = 0;
-	Ply[0].h_R = 4;
-	Ply[0].h_l = MD_TWOPI/10.0;
+	Ply[0].h_w = in_w;
+	Ply[0].h_v = in_v;
+	Ply[0].h_R = in_R;
+	Ply[0].h_l = MD_TWOPI/in_l;
 
 	double* r_init_helix = malloc( DIM*helixN*sizeof(double) );
 	placePolymer( Ply, HELIX, r_init_helix, r0, Dr, 0.0 );
@@ -124,7 +133,7 @@ void simple_test(){
 		printf("%f\n", r_init[i]);
 		++ii;
 	}*/
-	Params parameters = { .total_time = 2000000, .hydro = 0 , .temperature = 1};
+	Params parameters = { .total_time = 1000000, .hydro = 1 , .temperature = 1};
 
 	simulation( Ply, parameters, r_init, numPolymers, 1);
 
