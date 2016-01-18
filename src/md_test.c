@@ -9,13 +9,13 @@
 
 void md_init_SinglePolymer();
 void simple_test(int in_N, double in_R, double in_l, double in_w, double in_v );
-void single_polymer_test();
+void single_polymer_test( int in_simnum );
 void CholeskyTest();
 void matrixMultiplyTest();
 
 int main( int argc, char *argv[]  ){
 
-
+	int in_simnum;
 	//int in_N = 1;
 	//double in_R=10.0, in_l=1.0, in_w=0.0, in_v=0.0;
 	//sscanf(argv[2],"%d",&in_N);
@@ -25,7 +25,8 @@ int main( int argc, char *argv[]  ){
 	//sscanf(argv[1],"%lf",&in_v);
 	//printf("#\t%d\t%lf\t%lf\t%lf\t./git%lf\n", in_N, in_R, in_w, in_l, in_v);
 	//simple_test( in_N, in_R, in_l, in_w, in_v );
-	single_polymer_test();
+	sscanf( argv[1], "%d", &in_simnum );
+	single_polymer_test( in_simnum );
 
 	return 0;
 }
@@ -68,7 +69,7 @@ int main( int argc, char *argv[]  ){
 
 //}
 
-void single_polymer_test(){
+void single_polymer_test( int simnum ){
 
 	int numPolymers = 2;
 	Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
@@ -115,9 +116,9 @@ void single_polymer_test(){
 		++ii;
 	}
 	
-	Params parameters = { .total_time = 1000000, .hydro = 1 , .temperature = 1};
+	Params parameters = { .total_time = 10000, .hydro = 1 , .temperature = 1};
 
-	simulation( Ply, parameters, r_init, numPolymers, 1);
+	simulation( Ply, parameters, r_init, numPolymers, simnum);
 
 	free(Ply);
 	free(r_init_helix);
