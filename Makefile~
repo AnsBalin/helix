@@ -12,6 +12,7 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ -I${NAGCDIR}/include \
 					-m64 ${NAGCDIR}/lib/libnagc_nag.a \
 					${NAGCDIR}/rtl/intel64/libifcore.a ${NAGCDIR}/rtl/intel64/libimf.a \
+#	printf("Hello world from thread %d!\n",threadIdx.x);
 					${NAGCDIR}/rtl/intel64/libirc.a \
 					-ldl -lpthread -lm -fopenmp
 
