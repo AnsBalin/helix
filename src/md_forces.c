@@ -24,8 +24,8 @@ void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, do
 	// 	}
 	// }
  	
- 	//repel( PlyList, numPolymers, r, f, r_ij, N  );
- 	//attract( PlyList, numPolymers, r, f, r_ij, N );
+ 	repel( PlyList, numPolymers, r, f, r_ij, N  );
+ 	attract( PlyList, numPolymers, r, f, r_ij, N );
 	//bending( PlyList, numPolymers, r, f, r_ij, N );
  	/* We need to add force f = 6*pi*mu v to monomers perscribed to move at speed v */
  	prescribedForces( PlyList, numPolymers, r, f, r_ij, N, t );
@@ -72,7 +72,7 @@ void repel( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_
  			numAtomsQ = (PlyList+q)->numAtoms;
  			perscribedQ = (PlyList+q)->perscription;
 
- 			if ( /*!perscribedP || !perscribedQ*/ 0==0 ){
+ 			if ( !perscribedP || !perscribedQ ){
 	 			for (int i = 0; i < numAtomsP; ++i){
 	 				p1 = (PlyList+p)->firstAtomID + i;
  					for (int j = ((p==q)? i+1 : 0); j < numAtomsQ; ++j){
@@ -86,10 +86,10 @@ void repel( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_
 							FOR_ALL_K {
 								r_diff[k] = r[ DIM*p1 + k ] - r[ DIM*p2 + k ];
 								/* Apologies for this somewhat complicated logic */
-								//f[ DIM*p1 + k ] +=  (!perscribedP)*(2 - !perscribedQ)*force*r_diff[k];
-								//f[ DIM*p2 + k ] += -(!perscribedQ)*(2 - !perscribedP)*force*r_diff[k];
-								f[ DIM*p1 + k ] +=  force*r_diff[k];
-								f[ DIM*p2 + k ] += -force*r_diff[k];
+								f[ DIM*p1 + k ] +=  (!perscribedP)*(2 - !perscribedQ)*force*r_diff[k];
+								f[ DIM*p2 + k ] += -(!perscribedQ)*(2 - !perscribedP)*force*r_diff[k];
+								//f[ DIM*p1 + k ] +=  force*r_diff[k];
+								//f[ DIM*p2 + k ] += -force*r_diff[k];
 							}
 						}
  					}
@@ -113,7 +113,7 @@ void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* 
  	{
  		numAtoms = (PlyList+p)->numAtoms;
  		perscribed = (PlyList+p)->perscription;
- 		if( /*perscribed*/ 0 == 0 ){
+ 		if( !perscribed ){
  			for (int i = 0; i < numAtoms-1; ++i)
  			{
 

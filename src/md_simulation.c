@@ -49,9 +49,9 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 			
 			t1 = clock();
 			t1000 = t1 - t2;
-			//printf("N: %03d\tSim: %02d\tElapsed: %.3f\tRemaining: %.3f\n", N_tot, simnum, (t1-t0)/1000000, (total_time/tsave - t/tsave)*t1000/1000000);
+			printf("N: %03d\tSim: %02d\tElapsed: %.3f\tRemaining: %.3f\n", N_tot, simnum, (t1-t0)/1000000, (total_time/tsave - t/tsave)*t1000/1000000);
 			t2 = t1;
-			meanforce( r, f, N_tot );
+			meanforce( r, f, Ply[0].numAtoms );
 
 			saveXYZtofile( Ply, numPolymers, r, N_tot, fp );
 
@@ -112,12 +112,12 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 
 
 			
-			switch(/*(Ply+p)->perscription*/ 0 ){
-				case 0:
+			switch( (Ply+p)->perscription ){
+				case NORMAL:
 					for (int n = 0; n < DIM*((Ply+p)->numAtoms); ++n)
 					{			
 						index = DIM*((Ply+p)->firstAtomID) + n;		
-						dxtmp = a1*Df[index];// + a2*Bdw[index]; 
+						dxtmp = a1*Df[index] + a2*Bdw[index]; 
 						r[index] += dxtmp;
 					}
 					break;
@@ -146,7 +146,7 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 		 		dr = f MD_dt + dw
 		*/
 
-		for (int n = 0; n < DIM*N_tot; ++n) r[n] += a1*f[n];// + a2*dw[n]; 
+		for (int n = 0; n < DIM*N_tot; ++n) r[n] += a1*f[n] + a2*dw[n]; 
 
 	}
 
