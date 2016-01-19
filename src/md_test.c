@@ -116,7 +116,7 @@ void single_polymer_test( int simnum ){
 		++ii;
 	}
 	
-	Params parameters = { .total_time = 10000, .hydro = 1 , .temperature = 1};
+	Params parameters = { .total_time = 1000000, .hydro = 1 , .temperature = 1};
 
 	simulation( Ply, parameters, r_init, numPolymers, simnum);
 
