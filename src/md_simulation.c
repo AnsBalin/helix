@@ -103,8 +103,8 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 		calcD( r, r_ij, D, N_tot, ROTNE ); // NOHI, OSEEN, ROTNE2, ROTNE3 (ROTNE)
 		mat_multiply_A_x( D, DIM*N_tot, f, Df );
 
-		//calcB_failure = calcB( D, DIM*N_tot, B );
-		//mat_multiply_A_x( B, DIM*N_tot, dw, Bdw );
+		calcB_failure = calcB( D, DIM*N_tot, B );
+		mat_multiply_A_x( B, DIM*N_tot, dw, Bdw );
 		
 		double dxtmp=0;
 		for (int p = 0; p < numPolymers; ++p)

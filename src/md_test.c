@@ -16,17 +16,17 @@ void matrixMultiplyTest();
 int main( int argc, char *argv[]  ){
 
 	//int in_simnum;
-	int in_N = 1;
-	double in_R=10.0, in_l=1.0, in_w=0.0, in_v=0.0;
-	sscanf(argv[2],"%d",&in_N);
-	sscanf(argv[3],"%lf",&in_R);
-	sscanf(argv[4],"%lf",&in_w);
-	sscanf(argv[5],"%lf",&in_l);	
-	sscanf(argv[1],"%lf",&in_v);
-	printf("#\t%d\t%lf\t%lf\t%lf\t./git%lf\n", in_N, in_R, in_w, in_l, in_v);
-	simple_test( in_N, in_R, in_l, in_w, in_v );
-	//sscanf( argv[1], "%d", &in_simnum );
-	//single_polymer_test( in_simnum );
+	int in_simnum = 1;
+	//double in_R=10.0, in_l=1.0, in_w=0.0, in_v=0.0;
+	//sscanf(argv[2],"%d",&in_N);
+	//sscanf(argv[3],"%lf",&in_R);
+	//sscanf(argv[4],"%lf",&in_w);
+	//sscanf(argv[5],"%lf",&in_l);	
+	//sscanf(argv[1],"%lf",&in_v);
+	//printf("#\t%d\t%lf\t%lf\t%lf\t./git%lf\n", in_N, in_R, in_w, in_l, in_v);
+	//simple_test( in_N, in_R, in_l, in_w, in_v );
+	sscanf( argv[1], "%d", &in_simnum );
+	single_polymer_test( in_simnum );
 
 	return 0;
 }
