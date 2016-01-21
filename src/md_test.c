@@ -79,7 +79,7 @@ void single_polymer_test( int simnum ){
 	double r0[3] = {15.0, 0.0, 0.0};
 	double Dr[3] = {0.0, 0.0, 0.0};
 
-	int helixN = 200;
+	int helixN = 120;
 	Ply[0].numAtoms = helixN;
 	Ply[0].firstAtomID = 0;
 	Ply[0].perscription = HELIX;
@@ -92,7 +92,7 @@ void single_polymer_test( int simnum ){
 	placePolymer( Ply, HELIX, r_init_helix, r0, Dr, 0.0 );
 
 
-	int polymerN = 50;
+	int polymerN = 25;
 	Ply[1].numAtoms = polymerN;
 	Ply[1].firstAtomID = helixN;
 	Ply[1].perscription = NORMAL;
