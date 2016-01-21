@@ -27,7 +27,7 @@ void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, do
  	repel( PlyList, numPolymers, r, f, r_ij, N  );
  	attract( PlyList, numPolymers, r, f, r_ij, N );
 	//bending( PlyList, numPolymers, r, f, r_ij, N );
- 	/* We need to add force f = 6*pi*mu v to monomers perscribed to move at speed v */
+
  	prescribedForces( PlyList, numPolymers, r, f, r_ij, N, t );
 
 }
@@ -280,8 +280,8 @@ void calc_dw( Polymers* PlyList, int numPolymers, double* dw, int N_tot ){
 	for (int p = 0; p < numPolymers; ++p)
 	{
 		
-		//perscribed = (PlyList+p)->perscription;
-		perscribed = 0;
+		perscribed = (PlyList+p)->perscription;
+		//perscribed = 0;
 		if ( !perscribed )
 		{
 			numAtoms = (PlyList+p)->numAtoms;

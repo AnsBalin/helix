@@ -111,7 +111,6 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 		{
 
 
-			
 			switch( (Ply+p)->perscription ){
 				case NORMAL:
 					for (int n = 0; n < DIM*((Ply+p)->numAtoms); ++n)
@@ -126,7 +125,7 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 					{
 
 						index = DIM*((Ply+p)->firstAtomID) + n;		
-						r[index]+= a1*f[index];
+						r[index]+= a1*Df[index];
 					}						
 					break;
 
