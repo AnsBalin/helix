@@ -28,6 +28,6 @@ int compute_r_ij( double* r, double* r_ij, int numAtoms );
 double hook( double r );
 double fene( double rr );
 void calcD( double* r, double* r_ij, double* D, int N, int TENSOR );
-int calcB( double* D, int N, double* B );
+int calcB( double* D, int N, double* B, int poly1, int polyn);
 
 #endif

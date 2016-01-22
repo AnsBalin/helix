@@ -454,19 +454,20 @@ void calcD( double* r_arr, double* r_ij, double* D, int N, int TENSOR ){
 	
 }
 
-int calcB( double* D, int N, double* B ){
+int calcB( double* D, int N, double* B, int poly1, int polyn ){
 
 	/* 	Uses the NAG cholesky decomposition to ensure <B.B> = D 
 		Documentation: http://www.nag.co.uk/numeric/cl/manual/pdf/F07/f07fdc.pdf 
 		Returns 1 if D is not positive definite, 0 for success */
-	double* a = malloc( N*N*sizeof(double) );
+	double* a = malloc( DIM*DIM*polyn*polyn*sizeof(double) );
 	NagError fail;
 	INIT_FAIL(fail);
 	Nag_OrderType order = Nag_RowMajor;
 	Nag_UploType uplo = Nag_Upper;
-	int n = N;
+	int n = DIM*polyn;
 	int pda = n;
 
+/* EDIT HERE!!!!!!*/
 	for (int i = 0; i < n; ++i)
 	{
 		for (int j = 0; j < i; ++j)
@@ -475,7 +476,7 @@ int calcB( double* D, int N, double* B ){
 		}
 		for (int j = i; j < n; ++j)
 		{
-			a[squ(i,j,n)] = D[squ(i,j,n)];
+			a[squ(i,j,n)] = D[rank4()];
 		}
 	}
 
@@ -486,6 +487,8 @@ int calcB( double* D, int N, double* B ){
 	{
 		B[i] = a[i];
 	}
+
+
 	free(a);
 	return fail.code == NE_POS_DEF;
 }

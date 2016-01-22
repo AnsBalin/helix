@@ -21,7 +21,8 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 	sprintf(filenameR, "dat/R_%03d_%02d.xyz", N_tot, simnum);
 	fp = fopen(filenameR,"w");
 	
-	srand(time(NULL));
+	time_t seed = time(NULL);
+	srand( seed );
 	
 	/* Allocate the memory for the main vectors/matrices */
 	allocAll( &r, &f, &dw, &D, &B, &r_ij, N_tot );
@@ -100,11 +101,13 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 			Df[i]  = 0.0;
 			Bdw[i] = 0.0;
 		}
-		calcD( r, r_ij, D, N_tot, ROTNE ); // NOHI, OSEEN, ROTNE2, ROTNE3 (ROTNE)
+		if( (int)(t/MD_dt) % 1000 == 0 ){
+			calcD( r, r_ij, D, N_tot, ROTNE ); // NOHI, OSEEN, ROTNE2, ROTNE3 (ROTNE)
+			calcB_failure = calcB( D, DIM*N_tot, B, poly1, polyn );
+		}
 		mat_multiply_A_x( D, DIM*N_tot, f, Df );
-
-		calcB_failure = calcB( D, DIM*N_tot, B );
 		mat_multiply_A_x( B, DIM*N_tot, dw, Bdw );
+
 		
 		double dxtmp=0;
 		for (int p = 0; p < numPolymers; ++p)
