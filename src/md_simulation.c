@@ -1,8 +1,8 @@
 #include "hdr/md_simulation.h"
 
-void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolymers, int simnum ){
+void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolymers, int simnum, int poly1, int polyn  ){
 
-	double *r, *f, *dw, *D, *B, *r_ij;
+	double *r, *f, *dw, *D, *B, *Df, *Bdw, *r_ij;
 	FILE *fp;
 
 
@@ -25,7 +25,7 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 	srand( seed );
 	
 	/* Allocate the memory for the main vectors/matrices */
-	allocAll( &r, &f, &dw, &D, &B, &r_ij, N_tot );
+	allocAll( &r, &f, &dw, &D, &B, &Df, &Bdw, &r_ij, N_tot );
 
 	/* Initialise the positions with previously determined initial locations */
 	for (int i = 0; i < DIM*N_tot; ++i) {
@@ -41,7 +41,7 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 			hydro=1;
 		}*/
 		/* all the action happens in here */
-		update( Ply, numPolymers, r, f, dw, r_ij, D, B, N_tot, hydro, (double)t*MD_dt );
+		update( Ply, numPolymers, r, f, dw, r_ij, D, B, Df, Bdw, N_tot, hydro, (double)t*MD_dt, poly1, polyn );
 		if( t == 1000 ){
 
 			//flowfield( N_tot, r, f );
@@ -64,17 +64,21 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 	free(dw);
 	free(D);
 	free(B);
+	free(Df);
+	free(Bdw);
 	free(r_ij);
 	fclose(fp);
 
 }
 
-void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, double* r_ij, double* D, double* B, int N_tot, int hydro, double t ){
+void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, double* r_ij, double* D, double* B, double* Df, double* Bdw, int N_tot, int hydro, double t, int poly1, int polyn  ){
 	
 	/* computeForces() increments f so f needs to be reset */
 	for (int n = 0; n < DIM*N_tot; ++n)
 	{
 		f[n] = 0.0;
+		Df[n]  = 0.0;
+		Bdw[n] = 0.0;
 	}
 
 	/* These are prefactors to D*f and B*dw respectively. Consider making global if zeta never changes */
@@ -92,22 +96,15 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 
 	if (hydro)
 	{
-		/* NOTE maybe faster, if less mem-efficient to update Df and Bdw rather than create, initialise etc */
-		double* Df =  malloc( DIM*N_tot * sizeof(double) );
-		double* Bdw = malloc( DIM*N_tot * sizeof(double) );
 		
-		for (int i = 0; i < DIM*N_tot; ++i)
-		{
-			Df[i]  = 0.0;
-			Bdw[i] = 0.0;
-		}
-		if( (int)(t/MD_dt) % 1000 == 0 ){
+		if( (int)(t/MD_dt) % 100 == 0 ){
 			calcD( r, r_ij, D, N_tot, ROTNE ); // NOHI, OSEEN, ROTNE2, ROTNE3 (ROTNE)
-			calcB_failure = calcB( D, DIM*N_tot, B, poly1, polyn );
+			//calcB_failure = calcB( D, B, 0, N_tot );
+			calcB_failure = calcB( D, DIM*N_tot, B );
 		}
-		mat_multiply_A_x( D, DIM*N_tot, f, Df );
-		mat_multiply_A_x( B, DIM*N_tot, dw, Bdw );
-
+		//mat_multiply_sym_A_x( D, DIM*N_tot, f, Df );
+		//mat_multiply_sym_A_x( B, DIM*N_tot, dw, Bdw );
+		mat_multiply2( D, f, Df, B, dw, Bdw, DIM*N_tot );
 		
 		double dxtmp=0;
 		for (int p = 0; p < numPolymers; ++p)
@@ -120,6 +117,7 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 					{			
 						index = DIM*((Ply+p)->firstAtomID) + n;		
 						dxtmp = a1*Df[index] + a2*Bdw[index]; 
+						
 						r[index] += dxtmp;
 					}
 					break;
@@ -137,8 +135,6 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 		}
 		
 
-		free(Df);
-		free(Bdw);
 		update_t++;
 
 	}

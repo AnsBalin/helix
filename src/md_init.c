@@ -1,12 +1,14 @@
 #include "hdr/md_init.h"
 
-void allocAll( double** r, double** f, double** dw, double** D, double** B, double** rr, const int N ){
+void allocAll( double** r, double** f, double** dw, double** D, double** B, double** Df, double** Bdw, double** rr, const int N ){
 
 	(*r) = malloc( DIM*N*sizeof(double) );
 	(*f) = malloc( DIM*N*sizeof(double) );
 	(*dw) = malloc( DIM*N*sizeof(double) );
 	(*D) = malloc( DIM*DIM*N*N*sizeof(double) );
   (*B) = malloc( DIM*DIM*N*N*sizeof(double) );
+  (*Df) = malloc( DIM*N*sizeof(double) );
+  (*Bdw) = malloc( DIM*N*sizeof(double) );
 	(*rr) = malloc( N*N*sizeof(double) );
 
 }

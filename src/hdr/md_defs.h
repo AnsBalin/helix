@@ -21,7 +21,7 @@
 // Triangular, N*N, and DIM*N*DIM*N matrix indexing
 #define tri(X,Y,N) (X*N - X*(X-1)/2 + Y - X) // Not used, but could be useful in future.
 #define squ(i,j,N) (i*N + j)
-#define rank4(i,j,n,m,N) (N*DIM*(DIM*i + n) + (DIM*j + m)) 
+#define rank4(i,j,n,m,N) (N*DIM*(DIM*i + n) + (DIM*j + m))
 
 // I use this a lot
 #define FOR_ALL_K for(int k=0;k<DIM;k++)

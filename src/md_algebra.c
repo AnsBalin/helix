@@ -39,6 +39,26 @@ void mat_multiply_A_x( double* mat, int N, double* x, double* y ){
 
 }
 
+void mat_multiply2( double* A1, double* x1, double* y1, double* A2, double* x2, double* y2, int N){
+
+	double a1, a2; 
+
+	for (int i = 0; i < N; ++i)
+	{
+		for (int j = i; j < N; ++j)
+		{
+			a1 = A1[ squ( i, j, N ) ];
+			a2 = A2[ squ( i, j, N ) ];
+			y1[i] += a1*x1[j];
+			y1[j] += a1*x1[i];
+			y2[i] += a2*x2[j];
+			y2[j] += a2*x2[i];
+		}
+	}
+
+}
+
+
 
 int mat_threshhold( double* mat, int N, double thresh, int** overlap_inds_result ){
 

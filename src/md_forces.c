@@ -436,7 +436,7 @@ void calcD( double* r_arr, double* r_ij, double* D, int N, int TENSOR ){
 							r2 = r_arr[DIM*i+m] - r_arr[DIM*j+m];
 							if( r >= 2.0*a ) 	D[rank4(i,j,n,m,N)] = I(i,j) ? I(n,m) : (1-I(i,j))*( 3.0*a/(4.0*r) )*( C1*I(n,m) + C2*r1*r2/rr );
 							else 				D[rank4(i,j,n,m,N)] = I(i,j) ? I(n,m) : (1-I(i,j))*( C3*I(n,m) + (3.0/(32.0*a))*r1*r2/r );
-
+							
 						}
 					}
 				}
@@ -454,20 +454,19 @@ void calcD( double* r_arr, double* r_ij, double* D, int N, int TENSOR ){
 	
 }
 
-int calcB( double* D, int N, double* B, int poly1, int polyn ){
+int calcB( double* D, int N, double* B ){
 
 	/* 	Uses the NAG cholesky decomposition to ensure <B.B> = D 
 		Documentation: http://www.nag.co.uk/numeric/cl/manual/pdf/F07/f07fdc.pdf 
 		Returns 1 if D is not positive definite, 0 for success */
-	double* a = malloc( DIM*DIM*polyn*polyn*sizeof(double) );
+	double* a = malloc( N*N*sizeof(double) );
 	NagError fail;
 	INIT_FAIL(fail);
 	Nag_OrderType order = Nag_RowMajor;
 	Nag_UploType uplo = Nag_Upper;
-	int n = DIM*polyn;
+	int n = N;
 	int pda = n;
 
-/* EDIT HERE!!!!!!*/
 	for (int i = 0; i < n; ++i)
 	{
 		for (int j = 0; j < i; ++j)
@@ -476,7 +475,7 @@ int calcB( double* D, int N, double* B, int poly1, int polyn ){
 		}
 		for (int j = i; j < n; ++j)
 		{
-			a[squ(i,j,n)] = D[rank4()];
+			a[squ(i,j,n)] = D[squ(i,j,n)];
 		}
 	}
 
@@ -486,6 +485,64 @@ int calcB( double* D, int N, double* B, int poly1, int polyn ){
 	for (int i = 0; i < n*n; ++i)
 	{
 		B[i] = a[i];
+	}
+	free(a);
+	return fail.code == NE_POS_DEF;
+}
+
+int calcB2( double* D, double* B, int poly1, int polyn ){
+
+	/* 	Uses the NAG cholesky decomposition to ensure <B.B> = D 
+		Documentation: http://www.nag.co.uk/numeric/cl/manual/pdf/F07/f07fdc.pdf 
+		Returns 1 if D is not positive definite, 0 for success */
+	double* a = malloc( DIM*DIM*polyn*polyn*sizeof(double) );
+	NagError fail;
+	INIT_FAIL(fail);
+	Nag_OrderType order = Nag_RowMajor;
+	Nag_UploType uplo = Nag_Upper;
+	int N = polyn;
+	int pda = N;
+
+    /* EDIT HERE!!!!!!*/
+	for (int i = 0; i < N; ++i)
+	{
+		for (int n = 0; n < DIM; ++n)
+		{
+			
+			for (int j = 0; j < i; ++j)
+			{
+				for (int m = 0; m < DIM; ++m)
+				{
+					a[rank4(i,j,n,m,N)] = 0.0;
+				}
+				
+			}
+			for (int j = i; j < N; ++j)
+			{
+				for (int m = n; m < DIM; ++m)
+				{
+					a[rank4(i,j,n,m,N)] = D[rank4(poly1+i,poly1+j,n,m,N)];
+				}
+			}
+		}
+	}
+
+	f07fdc( order, uplo, N, a, pda, &fail );
+
+	/* NOTE Consider passing B directly to Cholesky? This might marginally reduce overhead */
+	for (int i = 0; i < N; ++i)
+	{
+		for (int n = 0; n < DIM; ++n)
+		{
+			for (int j = 0; j < N; ++j)
+			{
+				for (int m = 0; m < DIM; ++m)
+				{
+					B[rank4(poly1+i,poly1+j,n,m,N)] = a[rank4(i,j,n,m,N)];
+					//printf("%f\n", B[rank4(poly1+i,poly1+j,n,m,N)]);
+				}
+			}
+		}
 	}
 
 

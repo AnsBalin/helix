@@ -116,9 +116,12 @@ void single_polymer_test( int simnum ){
 		++ii;
 	}
 	
+	int poly1 = Ply[1].firstAtomID;
+	int polyn = Ply[1].numAtoms;
+
 	Params parameters = { .total_time = 1000000, .hydro = 1 , .temperature = 1};
 
-	simulation( Ply, parameters, r_init, numPolymers, simnum);
+	simulation( Ply, parameters, r_init, numPolymers, simnum, poly1, polyn);
 
 	free(Ply);
 	free(r_init_helix);
@@ -196,7 +199,7 @@ void simple_test(int in_N, double in_R, double in_l, double in_w, double in_v ){
 	}*/
 	Params parameters = { .total_time = 10000, .hydro = 1 , .temperature = 1};
 
-	simulation( Ply, parameters, r_init, numPolymers, 1);
+	simulation( Ply, parameters, r_init, numPolymers, 1, 0, 0);
 
 	free(Ply);
 	free(r_init_helix);
@@ -245,7 +248,7 @@ void CholeskyTest(){
 		printf("\n");
 	}
 	printf("\n");
-	calcB(D,N,B);
+	calcB(D,N, B);
 
 
 	for (int i = 0; i < N; ++i)
