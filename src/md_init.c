@@ -40,10 +40,10 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
       for( int i=0; i<Ply->numAtoms; ++i ){
         
         //printf("%d\n", i);
-        FOR_ALL_K r_new[k] = r0[k] + i*dr[k]; //+ 0.1*((double)rand()/(double)RAND_MAX - 0.5);
+        FOR_ALL_K r_new[k] = r0[k] + MD_q0*i*dr[k]; //+ 0.1*((double)rand()/(double)RAND_MAX - 0.5);
 
         placeAtom( Ply->firstAtomID + i, r, r_new );
-      
+     
       }
 
       break;

@@ -10,7 +10,7 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 	int hydro = parameters.hydro;
 	double temperature = parameters.temperature;
 
-	int tsave = 1000; // Output/save every tsave steps
+	int tsave = 10000; // Output/save every tsave steps
 	int N_tot=0;
 	double t0, t1, t2, t1000; 
 
@@ -42,7 +42,7 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 		}*/
 		/* all the action happens in here */
 		update( Ply, numPolymers, r, f, dw, r_ij, D, B, Df, Bdw, N_tot, hydro, (double)t*MD_dt, poly1, polyn );
-		if( t == 1000 ){
+		if( t == 10000 ){
 
 			//flowfield( N_tot, r, f );
 		}
