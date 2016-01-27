@@ -97,7 +97,7 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 	if (hydro)
 	{
 		
-		if( (int)(t/MD_dt) % 100 == 0 ){
+		if( (int)(t/MD_dt) % 1000 == 0 ){
 			calcD( r, r_ij, D, N_tot, ROTNE ); // NOHI, OSEEN, ROTNE2, ROTNE3 (ROTNE)
 			//calcB_failure = calcB( D, B, 0, N_tot );
 			calcB_failure = calcB( D, DIM*N_tot, B );
