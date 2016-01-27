@@ -43,6 +43,7 @@ void mat_multiply2( double* A1, double* x1, double* y1, double* A2, double* x2, 
 
 	double a1, a2; 
 
+	/*
 	for (int i = 0; i < N; ++i)
 	{
 		for (int j = i; j < N; ++j)
@@ -55,6 +56,20 @@ void mat_multiply2( double* A1, double* x1, double* y1, double* A2, double* x2, 
 			y2[j] += a2*x2[i];
 		}
 	}
+	*/
+	
+	//#pragma omp parallel for
+	for (int i = 0; i < N; ++i)
+	{
+		for (int j = 0; j < N; ++j)
+		{
+			a1 = A1[ squ( i, j, N ) ];
+			a2 = A2[ squ( i, j, N ) ];
+			y1[i] += a1*x1[j];
+			y2[i] += a2*x2[j];
+		}
+	}
+
 
 }
 
