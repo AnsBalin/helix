@@ -76,7 +76,7 @@ void single_polymer_test( int simnum ){
 
 	/* Create helix */
 	// Vectors not needed for helix but needed for polymer
-	double r0[3] = {15.0, 0.0, 0.0};
+	double r0[3] = {8.0, 0.0, -20.0};
 	double Dr[3] = {0.0, 0.0, 0.0};
 
 	int helixN = 120;
@@ -92,7 +92,7 @@ void single_polymer_test( int simnum ){
 	placePolymer( Ply, HELIX, r_init_helix, r0, Dr, 0.0 );
 
 
-	int polymerN = 25;
+	int polymerN = 50;
 	Ply[1].numAtoms = polymerN;
 	Ply[1].firstAtomID = helixN;
 	Ply[1].perscription = NORMAL;
@@ -119,7 +119,7 @@ void single_polymer_test( int simnum ){
 	int poly1 = Ply[1].firstAtomID;
 	int polyn = Ply[1].numAtoms;
 
-	Params parameters = { .total_time = 1000000, .hydro = 1 , .temperature = 1};
+	Params parameters = { .total_time = 20000000, .hydro = 1 , .temperature = 1};
 
 	simulation( Ply, parameters, r_init, numPolymers, simnum, poly1, polyn);
 
