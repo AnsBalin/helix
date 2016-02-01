@@ -74,12 +74,8 @@ void single_polymer_test( int simnum ){
 	int numPolymers = 2;
 	Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
 
-	/* Create helix */
-	// Vectors not needed for helix but needed for polymer
-	double r0[3] = {15.0, 0.0, -20.0};
-	double Dr[3] = {0.0, 0.0, 0.0};
 
-	int helixN = 120;
+	int helixN = 200;
 	Ply[0].numAtoms = helixN;
 	Ply[0].firstAtomID = 0;
 	Ply[0].perscription = HELIX;
@@ -87,12 +83,17 @@ void single_polymer_test( int simnum ){
 	Ply[0].h_v = 0.0;
 	Ply[0].h_R = 4.0;
 	Ply[0].h_l = MD_TWOPI/15;
+	
+	/* Create helix */
+	// Vectors not needed for helix but needed for polymer
+	double Dr[3] = {0.0, 0.0, 0.0};
+	double r0[3] = {0.0, 10.0, -0.5*helixN*MD_q0/sqrt( 1 + (Ply[0].h_R * Ply[0].h_R) * (Ply[0].h_l* Ply[0].h_l) ) - 15.0 };
 
 	double* r_init_helix = malloc( DIM*helixN*sizeof(double) );
 	placePolymer( Ply, HELIX, r_init_helix, r0, Dr, 0.0 );
 
 
-	int polymerN = 50;
+	int polymerN = simnum;
 	Ply[1].numAtoms = polymerN;
 	Ply[1].firstAtomID = helixN;
 	Ply[1].perscription = NORMAL;
@@ -119,7 +120,7 @@ void single_polymer_test( int simnum ){
 	int poly1 = Ply[1].firstAtomID;
 	int polyn = Ply[1].numAtoms;
 
-	Params parameters = { .total_time = 100000, .hydro = 1 , .temperature = 1};
+	Params parameters = { .total_time = 50000000, .hydro = 1 , .temperature = 1};
 
 	simulation( Ply, parameters, r_init, numPolymers, simnum, poly1, polyn);
 

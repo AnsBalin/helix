@@ -17,8 +17,8 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 	/* Count the total # of monomers in the simulation */
 	for (int i = 0; i < numPolymers; ++i) N_tot += Ply[i].numAtoms;
 	//printf("---N_tot = %d\n", N_tot);
-	char filenameR[sizeof "dat/R_XXX_XX.dat"]; 
-	sprintf(filenameR, "dat/R_%03d_%02d.xyz", N_tot, simnum);
+	char filenameR[sizeof "dat3/R_XXX_XX.dat"]; 
+	sprintf(filenameR, "dat3/R_%03d_%02d.xyz", N_tot, simnum);
 	fp = fopen(filenameR,"w");
 	
 	time_t seed = time(NULL);
