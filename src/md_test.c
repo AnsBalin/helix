@@ -134,7 +134,7 @@ void single_polymer_test( int in_polymerN, int in_h_l, int in_x0, int in_simnum 
 	int poly1 = Ply[1].firstAtomID;
 	int polyn = Ply[1].numAtoms;
 
-	Params parameters = { .total_time = 2000, .hydro = 0 , .temperature = 1};
+	Params parameters = { .total_time = 20000000, .hydro = 1 , .temperature = 1};
 
 	simulation( Ply, parameters, r_init, numPolymers, in_simnum, poly1, polyn);
 
