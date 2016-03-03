@@ -45,7 +45,7 @@ void saveXYZtofile( Polymers* PlyList, int numPolymers, double* r, int N_tot, FI
     { 
       atomID = id + j;
       Q = r + DIM*atomID;
-      fprintf( fp, "%d\t%lf\t%lf\t%lf\n", i, Q[0], Q[1], Q[2] );
+      fprintf( fp, "%d\t%.3f\t%.3f\t%.3f\n", i, Q[0], Q[1], Q[2] );
     }
 
   

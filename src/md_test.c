@@ -9,14 +9,15 @@
 
 void md_init_SinglePolymer();
 void simple_test(int in_N, double in_R, double in_l, double in_w, double in_v );
-void single_polymer_test( int in_simnum );
+void single_polymer_test( int in_polymerN, int in_h_l, int in_x0, int in_simnum );
+//void single_polymer_test( int in_simnum );
 void CholeskyTest();
 void matrixMultiplyTest();
 
 int main( int argc, char *argv[]  ){
 
 	//int in_simnum;
-	int in_simnum = 1;
+	int in_simnum, in_polymerN, in_h_l, in_x0;
 	//double in_R=10.0, in_l=1.0, in_w=0.0, in_v=0.0;
 	//sscanf(argv[2],"%d",&in_N);
 	//sscanf(argv[3],"%lf",&in_R);
@@ -25,8 +26,11 @@ int main( int argc, char *argv[]  ){
 	//sscanf(argv[1],"%lf",&in_v);
 	//printf("#\t%d\t%lf\t%lf\t%lf\t./git%lf\n", in_N, in_R, in_w, in_l, in_v);
 	//simple_test( in_N, in_R, in_l, in_w, in_v );
-	sscanf( argv[1], "%d", &in_simnum );
-	single_polymer_test( in_simnum );
+	sscanf( argv[1], "%d", &in_polymerN );
+	sscanf( argv[2], "%d", &in_h_l );
+	sscanf( argv[3], "%d", &in_x0 );
+	sscanf( argv[4], "%d", &in_simnum );
+	single_polymer_test( in_polymerN, in_h_l, in_x0, in_simnum );
 
 	return 0;
 }
@@ -69,7 +73,7 @@ int main( int argc, char *argv[]  ){
 
 //}
 
-void single_polymer_test( int simnum ){
+void single_polymer_test( int in_polymerN, int in_h_l, int in_x0, int in_simnum ){
 
 	int numPolymers = 2;
 	Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
@@ -82,18 +86,18 @@ void single_polymer_test( int simnum ){
 	Ply[0].h_w = 20.0;
 	Ply[0].h_v = 0.0;
 	Ply[0].h_R = 4.0;
-	Ply[0].h_l = MD_TWOPI/15;
+	Ply[0].h_l = MD_TWOPI/in_h_l;
 	
 	/* Create helix */
 	// Vectors not needed for helix but needed for polymer
 	double Dr[3] = {0.0, 0.0, 0.0};
-	double r0[3] = {0.0, 10.0, -0.5*helixN*MD_q0/sqrt( 1 + (Ply[0].h_R * Ply[0].h_R) * (Ply[0].h_l* Ply[0].h_l) ) - 15.0 };
+	double r0[3] = {0.0, in_x0, -0.5*helixN*MD_q0/sqrt( 1 + (Ply[0].h_R * Ply[0].h_R) * (Ply[0].h_l* Ply[0].h_l) ) - 30.0 };
 
 	double* r_init_helix = malloc( DIM*helixN*sizeof(double) );
 	placePolymer( Ply, HELIX, r_init_helix, r0, Dr, 0.0 );
 
 
-	int polymerN = simnum;
+	int polymerN = in_polymerN;
 	Ply[1].numAtoms = polymerN;
 	Ply[1].firstAtomID = helixN;
 	Ply[1].perscription = NORMAL;
@@ -120,9 +124,9 @@ void single_polymer_test( int simnum ){
 	int poly1 = Ply[1].firstAtomID;
 	int polyn = Ply[1].numAtoms;
 
-	Params parameters = { .total_time = 50000000, .hydro = 1 , .temperature = 1};
+	Params parameters = { .total_time = 20000000, .hydro = 1 , .temperature = 1};
 
-	simulation( Ply, parameters, r_init, numPolymers, simnum, poly1, polyn);
+	simulation( Ply, parameters, r_init, numPolymers, in_simnum, poly1, polyn);
 
 	free(Ply);
 	free(r_init_helix);
