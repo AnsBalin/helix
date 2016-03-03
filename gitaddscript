@@ -1,4 +1,5 @@
-git add src/*
+git add src/hdr/*
+git add src/*.c
 git add README.md
 git add Makefile*
 git add gitaddscript

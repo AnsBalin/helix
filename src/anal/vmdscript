@@ -1,0 +1,23 @@
+mol new /home/balin/Desktop/helix/exp1/R_205_001.xyz
+
+mol delrep 0 top
+mol color Name
+mol representation Lines
+mol selection {atomicnumber 0}
+mol addrep top
+
+
+mol color Molecule
+mol representation VDW 0.6
+mol selection {atomicnumber 1}
+mol addrep top
+
+mol new /home/balin/Desktop/helix/exp1/R_205_02.xyz
+
+mol delrep 0 top
+
+mol color Molecule
+mol representation VDW 0.6
+mol selection {atomicnumber 1}
+mol addrep top
+
