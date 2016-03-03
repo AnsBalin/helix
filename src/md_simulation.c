@@ -18,10 +18,10 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 	for (int i = 0; i < numPolymers; ++i) N_tot += Ply[i].numAtoms;
 	//printf("---N_tot = %d\n", N_tot);
 	char filenameR[sizeof "exp1/R_XXX_XXX.dat"]; 
-	sprintf(filenameR, "exp1/R_%03d_%03d.xyz", N_tot, simnum);
+	sprintf(filenameR, "exp2/R_%03d_%03d.xyz", N_tot, simnum);
 	
 	char filenameF[sizeof "exp1/F_XXX_XXX.dat"]; 
-	sprintf(filenameF, "exp1/F_%03d_%03d.xyz", N_tot, simnum);
+	sprintf(filenameF, "exp2/F_%03d_%03d.xyz", N_tot, simnum);
 	
 	fp1 = fopen(filenameR,"w");
 	fp2 = fopen(filenameF,"w");
