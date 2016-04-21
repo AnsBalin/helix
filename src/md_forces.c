@@ -79,6 +79,7 @@ void repel( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_
  						
  						p2 = (PlyList+q)->firstAtomID + j;
  						separation = r_ij[ squ(p1,p2,N) ];
+
  						if( separation <= MD_q0 ){
  							force = softsphere( separation );
  							
@@ -101,7 +102,85 @@ void repel( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_
  	}
  	free(r_diff);
 }
+void repel_PBC( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N  ){
 
+	double* r_diff = malloc( DIM*sizeof(double));
+	double force, separation;
+	int numAtomsP, numAtomsQ, perscribedP, perscribedQ, p1, p2;
+	
+	double x1, y1, z1, x2, y2, z2;
+
+	for (int p = 0; p < numPolymers; ++p){
+ 		
+ 		numAtomsP = (PlyList+p)->numAtoms;
+ 		perscribedP = (PlyList+p)->perscription;
+ 		
+ 		for (int q = p; q < numPolymers; ++q){
+ 			
+ 			numAtomsQ = (PlyList+q)->numAtoms;
+ 			perscribedQ = (PlyList+q)->perscription;
+
+ 			if ( !perscribedP || !perscribedQ ){
+	 			for (int i = 0; i < numAtomsP; ++i){
+	 				p1 = (PlyList+p)->firstAtomID + i;
+ 					for (int j = ((p==q)? i+1 : 0); j < numAtomsQ; ++j){
+ 						
+ 						p2 = (PlyList+q)->firstAtomID + j;
+ 						//separation = r_ij[ squ(p1,p2,N) ];
+
+ 						double Lx = 100;
+ 						double Ly = 100;
+ 						double Lz = 100;
+
+ 						//for (int dx = -1; dx <= 1; ++dx)
+ 						{	
+ 							int dx = 0;
+							//for (int dy = -1; dy <= 1; ++dy)
+ 							{
+ 								int dy = 0;
+ 								//for (int dz = -1; dz <= 1; ++dz)
+ 								{	
+ 									int dz = 0;
+
+ 									x1 = r[ DIM*p1  ];
+ 									y1 = r[ DIM*p1+1];
+ 									z1 = r[ DIM*p1+2];
+
+ 									x2 = r[ DIM*p2  ] + dx*Lx;
+ 									y2 = r[ DIM*p2+1] + dy*Ly;
+ 									z2 = r[ DIM*p2+2] + dz*Lz;
+
+ 									separation = sqrt( (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) + (z2-z1)*(z2-z1));
+									if( separation <= MD_q0 ){
+ 										force = softsphere( separation );
+ 							
+ 										r_diff[0] = x1 - x2;
+ 										r_diff[1] = y1 - y2;
+ 										r_diff[2] = z1 - z2;
+
+										FOR_ALL_K {
+											
+											/* Apologies for this somewhat complicated logic */
+											f[ DIM*p1 + k ] +=  (!perscribedP)*(2 - !perscribedQ)*force*r_diff[k];
+											f[ DIM*p2 + k ] += -(!perscribedQ)*(2 - !perscribedP)*force*r_diff[k];
+											//f[ DIM*p1 + k ] +=  force*r_diff[k];
+											//f[ DIM*p2 + k ] += -force*r_diff[k];
+										}
+									}
+ 								}
+ 							} 							
+ 						}
+
+ 						
+ 					}
+ 				}
+ 			}
+ 		
+
+ 		}
+ 	}
+ 	free(r_diff);
+}
 void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N ){
 
 	double* r_diff = malloc( DIM*sizeof(double));
@@ -223,21 +302,21 @@ void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f,
 
 					double x, y, radius, phase;
 					phase = 0.0;
-					for (int i = 0; i < numAtoms; ++i){
+					/*for (int i = 0; i < numAtoms; ++i){
 						x = r[ DIM*p1 + 0 ];
 						y = r[ DIM*p1 + 1 ];
 						radius = sqrt(x*x + y*y);
 						//phase += ( -0.7 < x/r < 0.7) ? (acos( x/r )-l*i*Dz - w*t) : (asin( y/r )-l*i*Dz - w*t);
 						//phase += (atan2( y/radius, x/radius )-(l*i*Dz - w*t));
-					}
+					}*/
 					phase = phase/numAtoms;
 					//printf("%lf\n", phase);
 					for (int i = 0; i < numAtoms; ++i)
  					{
  						p1 = (PlyList+p)->firstAtomID + i;
- 						f[ DIM*p1 + 0 ] += -9*( r[ DIM*p1 + 0 ] - R*cos(l*i*Dz - w*t - phase) );
- 						f[ DIM*p1 + 1 ] += -9*( r[ DIM*p1 + 1 ] - R*sin(l*i*Dz - w*t - phase) );
- 						f[ DIM*p1 + 2 ] += -9*( r[ DIM*p1 + 2 ] - (i-numAtoms/2)*Dz - v*t);
+ 						f[ DIM*p1 + 0 ] += -20*( r[ DIM*p1 + 0 ] - R*cos(l*i*Dz - w*t - phase) );
+ 						f[ DIM*p1 + 1 ] += -20*( r[ DIM*p1 + 1 ] - R*sin(l*i*Dz - w*t - phase) );
+ 						f[ DIM*p1 + 2 ] += -20*( r[ DIM*p1 + 2 ] - (i-numAtoms/2)*Dz - v*t);
  						
  						//x = r[ DIM*p1 + 0 ];
  						//y = r[ DIM*p1 + 1 ];
@@ -264,6 +343,7 @@ void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f,
  	
 
 }
+
 
 
 void calc_dw( Polymers* PlyList, int numPolymers, double* dw, int N_tot ){

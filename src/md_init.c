@@ -94,6 +94,8 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
       }
 
       break;
+
+
     case TRACER:
       
       for (int n = 0; n < (int) sqrt(Ply->numAtoms); ++n)
@@ -109,6 +111,50 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
         }
       }
 
+      break;
+
+    case RANDOM:
+      do {
+          
+      FOR_ALL_K r_new[k] = 10.0*(2.0*(double)rand()/(double)RAND_MAX - 1.0);
+          
+      }while (overlap( Ply, Ply->firstAtomID, r_new, r ) != 0);
+        
+      placeAtom( Ply->firstAtomID, r, r_new );
+      printf("%f\t%f\t%f\n", r_new[0], r_new[1], r_new[2]);
+      
+      break; 
+    case RANDOM_SAW:
+
+      do {
+          
+      FOR_ALL_K r_new[k] = 10.0*(2.0*(double)rand()/(double)RAND_MAX - 1.0);
+      printf("finding 1\n");
+      printf("%f\t%f\t%f\n", r_new[0], r_new[1], r_new[2]);
+    
+      }while (overlap( Ply, Ply->firstAtomID, r_new, r ) != 0);
+
+      placeAtom( Ply->firstAtomID, r, r_new );
+
+      for( int i=Ply->firstAtomID+1; i<(Ply->firstAtomID + Ply->numAtoms); ++i ){
+        do {
+          printf("finding 2\n");
+
+          phi = MD_TWOPI * (double)rand()/(double)RAND_MAX;
+          theta=0;
+          if( DIM==3 ) {
+            dr[2] = MD_q0*( 2.0*(double)rand()/(double)RAND_MAX - 1.0);
+            theta = asin(dr[2]/MD_q0);
+          }
+          else printf("DIM must be 2 or 3 for SAW.\n");
+          dr[0] = MD_q0*cos(theta)*cos(phi);
+          dr[1] = MD_q0*cos(theta)*sin(phi);
+          FOR_ALL_K r_new[k] = r[(i-1)*DIM + k] + dr[k];
+          printf("%f\t%f\t%f\n", r_new[0], r_new[1], r_new[2]);
+        }while (overlap( Ply,  i, r_new, r ) != 0);
+
+        placeAtom( i, r, r_new );
+      }
       break;
     default:
       printf("Did not supply correct SHAPE.\n");

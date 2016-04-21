@@ -17,6 +17,7 @@
 //void computeForces( Polymers* PlyList, int numPolymers, double temperature );
 void computeForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N, double t );
 void repel_old( int i, int j, double r_ij, double* f, double* r );
+void repel_PBC( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N  );
 void repel( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N  );
 void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N, double t );
 void attract( Polymers* PlyList, int numPolymers, double* r, double* f, double* r_ij, int N );
