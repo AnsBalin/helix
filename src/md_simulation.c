@@ -81,7 +81,9 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 
 		calculate_CoM(Ply, r, r_com);
 		Rg = calculate_Rg(Ply, r, r_com);
-		fprintf( fp4, "%.3f\n", Rg );
+		if ( t % tsave == 0){
+			fprintf( fp4, "%.3f\n", Rg );
+		}
 		sqDisp = calculate_SqDisplacement( r_com );
 		fprintf( fp3, "%.3f\n", sqDisp );
 		if( t % tsave == 0 ){
@@ -93,7 +95,7 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 			meanforce( r, f, Ply[0].numAtoms );
 
 			saveXYZtofile( Ply, numPolymers, r, N_tot, fp1 );
-			saveXYZtofile( Ply, numPolymers, f, N_tot, fp2 );
+			//saveXYZtofile( Ply, numPolymers, f, N_tot, fp2 );
 
 		} 
 	}

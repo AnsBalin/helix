@@ -38,11 +38,14 @@ int main( int argc, char *argv[]  ){
 	//sscanf( argv[3], "%d", &in_x0 );
 	sscanf( argv[1], "%d", &in_N );
 	sscanf( argv[2], "%d", &in_hydro );
-	sscanf( argv[3], "%d", &in_simnum );
+	//sscanf( argv[3], "%d", &in_simnum );
 	//scanf( argv[1], "%d", &in_simnum );
 	//single_polymer_test( in_polymerN, in_h_l, in_x0, in_simnum );
 	//singlePolymerStatistics(in_simnum);
-	single_polymer_statistics(in_N, in_hydro, in_simnum);
+	int numsims=100;	
+	for( int i=0; i<numsims; ++i)
+		single_polymer_statistics(in_N, in_hydro, i);
+	
 	return 0;
 }
 
@@ -130,7 +133,7 @@ double r0[3] = {0.0, 0.0, 0.0};
 double* r_init = malloc( DIM*polyN*sizeof(double));
 
 placePolymer( Ply, SAW, r_init, r0, Dr, 0.0);
-Params parameters = { .total_time = 160000, .hydro = hydro, .temperature = 1};
+Params parameters = { .total_time = 200000, .hydro = hydro, .temperature = 1};
 
 simulation( Ply, parameters, r_init, numPolymers, in_simnum);
 
