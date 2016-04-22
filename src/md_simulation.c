@@ -66,6 +66,7 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 	calculate_CoM(Ply, r, r_com);
 	shift( r, r_com, N_tot );
 
+
 	for (int t = 0; t < total_time; ++t)
 	{
 		/*if ( t > total_time-1000)
@@ -243,7 +244,7 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 						r[index] += dxtmp; //+0.00000001;
 					}
 					
-					if (r[DIM*((Ply+p)->firstAtomID)] > 10.5){
+					/*if (r[DIM*((Ply+p)->firstAtomID)] > 10.5){
 						for (int n = 0; n < ((Ply+p)->numAtoms); ++n)
 						{			
 							r[DIM*((Ply+p)->firstAtomID+n)] -= 20.0;
@@ -278,7 +279,7 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 						{			
 							r[DIM*((Ply+p)->firstAtomID+n)+2] += 20.0;
 						}
-					}
+					}*/
 			
 		}
 		
