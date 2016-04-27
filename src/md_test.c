@@ -19,7 +19,7 @@ void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum );
 
 int main( int argc, char *argv[]  ){
 
-	//int in_N, in_simnum, in_hydro;
+	int in_N, in_hydro;
 	//int in_simnum, in_polymerN, in_h_l, in_x0;
 	//double in_R=10.0, in_l=1.0, in_w=0.0, in_v=0.0;
 	//sscanf(argv[2],"%d",&in_N);
@@ -36,16 +36,17 @@ int main( int argc, char *argv[]  ){
 	//sscanf( argv[1], "%d", &in_polymerN );
 	//sscanf( argv[2], "%d", &in_h_l );
 	//sscanf( argv[3], "%d", &in_x0 );
-	//sscanf( argv[1], "%d", &in_N );
-	//sscanf( argv[2], "%d", &in_hydro );
+	sscanf( argv[1], "%d", &in_N );
+	sscanf( argv[2], "%d", &in_hydro );
 	//sscanf( argv[3], "%d", &in_simnum );
 	//scanf( argv[1], "%d", &in_simnum );
 	//single_polymer_test( in_polymerN, in_h_l, in_x0, in_simnum );
 	//singlePolymerStatistics(in_simnum);
-	//int numsims=100;	
-	//for( int i=0; i<numsims; ++i)
-		//single_polymer_statistics(in_N, in_hydro, i);
-	single_helix_flowfield( 0, 0, 0, 1 );
+
+
+	single_polymer_statistics(in_N, in_hydro, 0);
+
+
 	return 0;
 }
 
@@ -115,57 +116,70 @@ void many_polymer_test(){
 
 }
 
-void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum ){
+void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum){
 
-int numPolymers = 1;
-Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
-srand( in_simnum*time(NULL) );
 
-int polyN = in_polymerN;
-int N_tot = polyN;
-Ply[0].numAtoms = polyN;
-Ply[0].firstAtomID = 0;
-Ply[0].perscription = NORMAL;
+	int total_time 	= 100000;
+	double* Rg 		= malloc( total_time*sizeof(double) );
+	double* sqDisp 	= malloc( total_time*sizeof(double) );
 
-double Dr[3] = {0.0, 0.0, 0.0};
-double r0[3] = {0.0, 0.0, 0.0};
+	for(int i=0; i<total_time; ++i){
 
-double* r_init = malloc( DIM*polyN*sizeof(double));
+		Rg[i] 		= 0.0;
+		sqDisp[i] 	= 0.0;
 
-placePolymer( Ply, SAW, r_init, r0, Dr, 0.0);
-int total_time = 100000;
+	}	
+
+	int numsims=10;	
+
+
+	int numPolymers = 1;
+	Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
+	srand( in_simnum*time(NULL) );
+
+	int polyN = in_polymerN;
+	int N_tot = polyN;
+	Ply[0].numAtoms = polyN;
+	Ply[0].firstAtomID = 0;
+	Ply[0].perscription = NORMAL;
+
+	double Dr[3] = {0.0, 0.0, 0.0};
+	double r0[3] = {0.0, 0.0, 0.0};
+
+	double* r_init = malloc( DIM*polyN*sizeof(double));
+
+	placePolymer( Ply, SAW, r_init, r0, Dr, 0.0);
+
+		
+	Params parameters = { .total_time = total_time, .hydro = 0 , .temperature = 1};
+
+
+	for( int i=0; i<numsims; ++i){
+		printf("%d\n", i);
+		simulation2( Ply, parameters, r_init, numPolymers, 1, sqDisp, Rg);
+	}
+
+	char filenameSqDisp[sizeof "poly_exp2/sqDisp_XXX_XXX.dat"]; 
+	sprintf(filenameSqDisp, "poly_exp2/sqDisp_%03d_%03d.xyz", N_tot, 0);
+
+	char filenameRg[sizeof "poly_exp2/Rg_XXX_XXX.dat"]; 
+	sprintf(filenameRg, "poly_exp2/Rg_%03d_%03d.xyz", N_tot, 0);
 	
-Params parameters = { .total_time = total_time, .hydro = 0 , .temperature = 1};
-int nSims = 1000;	
-double* Rg = malloc( total_time*sizeof(double) );
-double* sqDisp = malloc( total_time*sizeof(double) );
-for(int i=0; i<total_time; ++i){
-	Rg[i] = 0.0;
-	sqDisp[i] = 0.0;
-}
+	FILE* fp1 = fopen(filenameSqDisp,"w");
+	FILE* fp2 = fopen(filenameRg,"w");
+	for(int i=0; i<total_time; ++i){
 
-for( int i=0; i<nSims; ++i)
-	simulation2( Ply, parameters, r_init, numPolymers, 1, Rg, sqDisp);
+		fprintf( fp2, "%.3f\n", Rg[i]/numsims );
+		fprintf( fp1, "%.3f\n", sqDisp[i]/numsims );
+	}
+	
 
-
-char filenameSqDisp[sizeof "poly_exp1/sqDisp_XXX_XXX.dat"]; 
-sprintf(filenameSqDisp, "poly_exp1/sqDisp_%03d_%03d.xyz", N_tot, 0);
-
-char filenameRg[sizeof "poly_exp1/Rg_XXX_XXX.dat"]; 
-sprintf(filenameRg, "poly_exp1/Rg_%03d_%03d.xyz", N_tot, 0);
-
-FILE* fp1 = fopen(filenameSqDisp,"w");
-FILE* fp2 = fopen(filenameRg,"w");
-for(int i=0; i<total_time; ++i){
-	Rg[i] = Rg[i]/nSims;
-	fprintf( fp2, "%.3f\n", Rg[i] );
-	sqDisp[i] = sqDisp[i]/nSims;
-	fprintf( fp1, "%.3f\n", sqDisp[i] );
-}
-fclose(fp1);
-fclose(fp2);
-free(Ply);
-free(r_init);
+	free(Rg);
+	free(sqDisp);
+	fclose(fp1);
+	fclose(fp2);
+	free(Ply);
+	free(r_init);
 
 }
 

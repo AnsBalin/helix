@@ -148,22 +148,15 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 	for (int i = 0; i < numPolymers; ++i) N_tot += Ply[i].numAtoms;
 	//printf("---N_tot = %d\n", N_tot);
 	char filenameR[sizeof "flowfield_exp1/R_XXX_XXX.dat"]; 
-	sprintf(filenameR, "flowfield_exp1/R_%03d_%03d.xyz", N_tot, simnum);
+	sprintf(filenameR, "poly_exp2/R_%03d_%03d.xyz", N_tot, simnum);
 	
 	char filenameF[sizeof "poly_exp1/F_XXX_XXX.dat"]; 
-	sprintf(filenameF, "flowfield_exp1/F_%03d_%03d.xyz", N_tot, simnum);
+	sprintf(filenameF, "poly_exp2/F_%03d_%03d.xyz", N_tot, simnum);
 
-	
-	/*char filenameSqDisp[sizeof "poly_exp1/sqDisp_XXX_XXX.dat"]; 
-	sprintf(filenameSqDisp, "poly_exp1/sqDisp_%03d_%03d.xyz", N_tot, simnum);
-	
-	char filenameRg[sizeof "poly_exp1/Rg_XXX_XXX.dat"]; 
-	sprintf(filenameRg, "poly_exp1/Rg_%03d_%03d.xyz", N_tot, simnum);
-	*/
+
 	fp1 = fopen(filenameR,"w");
 	fp2 = fopen(filenameF,"w");
-	//fp3 = fopen(filenameSqDisp,"w");
-	//fp4 = fopen(filenameRg,"w");
+
 
 	time_t seed = time(NULL);
 	srand( seed );
@@ -175,49 +168,26 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 	for (int i = 0; i < DIM*N_tot; ++i) {
 		r[i] = r_init[i];
 	}
+	
 	t0 = clock();
 	t1 = t0;
 	t2 = t0;
 
-	int M, L;
-	M = 50;
-	L = 150;
-	double* vx0 = malloc( sizeof(double)*M*L );
-	double* vy0 = malloc( sizeof(double)*M*L );
-	double* vz0 = malloc( sizeof(double)*M*L );
 
-	for(int i=0; i<M*L; ++i){
-
-		vx0[i] = 0.0;
-		vy0[i] = 0.0;
-		vz0[i] = 0.0;
-	}
-
-	//calculate_CoM(Ply, r, r_com);
-	//shift( r, r_com, N_tot );
+	calculate_CoM(Ply, r, r_com);
+	shift( r, r_com, N_tot );
 
 
 	for (int t = 0; t < total_time; ++t)
 	{
-		/*if ( t > total_time-1000)
-		{
-			hydro=1;
-		}*/
-		/* all the action happens in here */
-		//printf("%d\n", t);
+
 		update( Ply, numPolymers, r, f, dw, r_ij, D, B, Df, Bdw, N_tot, hydro, (double)t*MD_dt);
-		if( t > 50000 && (t%10==0) ){
 
-			flowfield( N_tot, r, f, vx0, vy0, vz0, M, L );
-		}
 
-		//calculate_CoM(Ply, r, r_com);
+		calculate_CoM(Ply, r, r_com);
 		Rg[t] += calculate_Rg(Ply, r, r_com);
-		if ( t % tsave == 0){
-			//fprintf( fp4, "%.3f\n", Rg );
-		}
 		sqDisp[t] += calculate_SqDisplacement( r_com );
-		//fprintf( fp3, "%.3f\n", sqDisp );
+		
 		if( t % tsave == 0 ){
 			
 			t1 = clock();
@@ -226,20 +196,12 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 			t2 = t1;
 			meanforce( r, f, Ply[0].numAtoms );
 
-			saveXYZtofile( Ply, numPolymers, r, N_tot, fp1 );
-			saveXYZtofile( Ply, numPolymers, f, N_tot, fp2 );
+			//saveXYZtofile( Ply, numPolymers, r, N_tot, fp1 );
+			//saveXYZtofile( Ply, numPolymers, f, N_tot, fp2 );
 
 		} 
 	}
 
-	FILE* flowfield = fopen("vfield.txt","w");
-	for(int i=0; i<M*L; ++i){
-		fprintf(flowfield, "%.3f,%.3f,%.3f\n",  vx0[i], vy0[i], vz0[i]);
-	}
-
-	free(vx0);
-	free(vy0);
-	free(vz0);
 
 	free(r);
 	free(f);
@@ -251,9 +213,6 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 	free(r_ij);
 	fclose(fp1);
 	fclose(fp2);
-	//fclose(fp3);
-	//close(fp4);
-	fclose(flowfield);
 
 }
 
