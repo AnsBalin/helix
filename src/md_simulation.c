@@ -154,8 +154,8 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 	sprintf(filenameF, "poly_exp2/F_%03d_%03d.xyz", N_tot, simnum);
 
 
-	fp1 = fopen(filenameR,"w");
-	fp2 = fopen(filenameF,"w");
+	//fp1 = fopen(filenameR,"w");
+	//fp2 = fopen(filenameF,"w");
 
 
 	time_t seed = time(NULL);
@@ -175,7 +175,7 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 
 
 	calculate_CoM(Ply, r, r_com);
-	shift( r, r_com, N_tot );
+	shift( r, r, N_tot );
 
 
 	for (int t = 0; t < total_time; ++t)
@@ -186,7 +186,7 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 
 		calculate_CoM(Ply, r, r_com);
 		Rg[t] += calculate_Rg(Ply, r, r_com);
-		sqDisp[t] += calculate_SqDisplacement( r_com );
+		sqDisp[t] += calculate_SqDisplacement( r );
 		
 		if( t % tsave == 0 ){
 			
@@ -211,8 +211,8 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 	free(Df);
 	free(Bdw);
 	free(r_ij);
-	fclose(fp1);
-	fclose(fp2);
+	//fclose(fp1);
+	//fclose(fp2);
 
 }
 

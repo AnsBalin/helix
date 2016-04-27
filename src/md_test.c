@@ -19,7 +19,7 @@ void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum );
 
 int main( int argc, char *argv[]  ){
 
-	int in_N, in_hydro;
+	int in_simnum, in_N, in_hydro;
 	//int in_simnum, in_polymerN, in_h_l, in_x0;
 	//double in_R=10.0, in_l=1.0, in_w=0.0, in_v=0.0;
 	//sscanf(argv[2],"%d",&in_N);
@@ -38,13 +38,13 @@ int main( int argc, char *argv[]  ){
 	//sscanf( argv[3], "%d", &in_x0 );
 	sscanf( argv[1], "%d", &in_N );
 	sscanf( argv[2], "%d", &in_hydro );
-	//sscanf( argv[3], "%d", &in_simnum );
+	sscanf( argv[3], "%d", &in_simnum );
 	//scanf( argv[1], "%d", &in_simnum );
 	//single_polymer_test( in_polymerN, in_h_l, in_x0, in_simnum );
 	//singlePolymerStatistics(in_simnum);
 
 
-	single_polymer_statistics(in_N, in_hydro, 0);
+	single_polymer_statistics(in_N, in_hydro, in_simnum);
 
 
 	return 0;
@@ -106,7 +106,7 @@ void many_polymer_test(){
 		placePolymer( Ply+i, RANDOM_SAW, r_init_poly, r0, Dr, 0.0 );
 	}
 
-	int total_time = 100000;
+	int total_time = 10000;
 	Params parameters = { .total_time = total_time, .hydro = 0 , .temperature = 1};
 	simulation( Ply, parameters, r_init_poly, numPolymers, 0);
 
@@ -119,7 +119,7 @@ void many_polymer_test(){
 void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum){
 
 
-	int total_time 	= 100000;
+	int total_time 	= 10000000;
 	double* Rg 		= malloc( total_time*sizeof(double) );
 	double* sqDisp 	= malloc( total_time*sizeof(double) );
 
@@ -130,7 +130,7 @@ void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum){
 
 	}	
 
-	int numsims=10;	
+	int numsims=20;	
 
 
 	int numPolymers = 1;
@@ -160,17 +160,17 @@ void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum){
 	}
 
 	char filenameSqDisp[sizeof "poly_exp2/sqDisp_XXX_XXX.dat"]; 
-	sprintf(filenameSqDisp, "poly_exp2/sqDisp_%03d_%03d.xyz", N_tot, 0);
+	sprintf(filenameSqDisp, "poly_exp2/sqDisp_%03d_%03d.xyz", N_tot, in_simnum);
 
 	char filenameRg[sizeof "poly_exp2/Rg_XXX_XXX.dat"]; 
-	sprintf(filenameRg, "poly_exp2/Rg_%03d_%03d.xyz", N_tot, 0);
+	sprintf(filenameRg, "poly_exp2/Rg_%03d_%03d.xyz", N_tot, in_simnum);
 	
 	FILE* fp1 = fopen(filenameSqDisp,"w");
 	FILE* fp2 = fopen(filenameRg,"w");
 	for(int i=0; i<total_time; ++i){
 
-		fprintf( fp2, "%.3f\n", Rg[i]/numsims );
-		fprintf( fp1, "%.3f\n", sqDisp[i]/numsims );
+		fprintf( fp2, "%.6f\n", Rg[i]/numsims );
+		fprintf( fp1, "%.6f\n", sqDisp[i]/numsims );
 	}
 	
 
