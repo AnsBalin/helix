@@ -36,13 +36,16 @@ int main( int argc, char *argv[]  ){
 	//sscanf( argv[1], "%d", &in_polymerN );
 	//sscanf( argv[2], "%d", &in_h_l );
 	//sscanf( argv[3], "%d", &in_x0 );
+	
 	sscanf( argv[1], "%d", &in_N );
 	sscanf( argv[2], "%d", &in_hydro );
 	sscanf( argv[3], "%d", &in_simnum );
+	
 	//scanf( argv[1], "%d", &in_simnum );
 	//single_polymer_test( in_polymerN, in_h_l, in_x0, in_simnum );
 	//singlePolymerStatistics(in_simnum);
-
+	
+	//single_helix_flowfield( 52, 0, 0, 0 );
 
 	single_polymer_statistics(in_N, in_hydro, in_simnum);
 
@@ -119,7 +122,7 @@ void many_polymer_test(){
 void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum){
 
 
-	int total_time 	= 10000000;
+	int total_time 	= 750000;
 	double* Rg 		= malloc( total_time*sizeof(double) );
 	double* sqDisp 	= malloc( total_time*sizeof(double) );
 
@@ -130,7 +133,7 @@ void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum){
 
 	}	
 
-	int numsims=20;	
+	int numsims=1;	
 
 
 	int numPolymers = 1;
@@ -156,14 +159,14 @@ void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum){
 
 	for( int i=0; i<numsims; ++i){
 		printf("%d\n", i);
-		simulation2( Ply, parameters, r_init, numPolymers, 1, sqDisp, Rg);
+		simulation2( Ply, parameters, r_init, numPolymers, i, sqDisp, Rg);
 	}
 
-	char filenameSqDisp[sizeof "poly_exp2/sqDisp_XXX_XXX.dat"]; 
-	sprintf(filenameSqDisp, "poly_exp2/sqDisp_%03d_%03d.xyz", N_tot, in_simnum);
+	char filenameSqDisp[sizeof "poly_exp3/sqDisp_XXX_XXX.dat"]; 
+	sprintf(filenameSqDisp, "poly_exp3/sqDisp_%03d_%03d.xyz", N_tot, in_simnum);
 
-	char filenameRg[sizeof "poly_exp2/Rg_XXX_XXX.dat"]; 
-	sprintf(filenameRg, "poly_exp2/Rg_%03d_%03d.xyz", N_tot, in_simnum);
+	char filenameRg[sizeof "poly_exp3/Rg_XXX_XXX.dat"]; 
+	sprintf(filenameRg, "poly_exp3/Rg_%03d_%03d.xyz", N_tot, in_simnum);
 	
 	FILE* fp1 = fopen(filenameSqDisp,"w");
 	FILE* fp2 = fopen(filenameRg,"w");
@@ -189,7 +192,7 @@ void single_helix_flowfield( int in_polymerN, int in_h_l, int in_x0, int in_simn
 	Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
 	srand(in_simnum*time(NULL));
 	
-	int helixN = 52;
+	int helixN = 82;
 	Ply[0].numAtoms = helixN;
 	Ply[0].firstAtomID = 0;
 	Ply[0].perscription = HELIX;
@@ -247,7 +250,7 @@ void single_helix_flowfield( int in_polymerN, int in_h_l, int in_x0, int in_simn
 	int polyn = 0;//Ply[1].numAtoms;
 
 	// time for 2 revolutions: 50000 to 302000
-	Params parameters = { .total_time = 50001, .hydro = 1 , .temperature = 1};
+	Params parameters = { .total_time = 302000, .hydro = 1 , .temperature = 1};
 
 	simulation( Ply, parameters, r_init, numPolymers, in_simnum);
 
