@@ -133,7 +133,7 @@ void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum){
 
 	}	
 
-	int numsims=1;	
+	int numsims=10;	
 
 
 	int numPolymers = 1;
@@ -154,7 +154,7 @@ void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum){
 	placePolymer( Ply, SAW, r_init, r0, Dr, 0.0);
 
 		
-	Params parameters = { .total_time = total_time, .hydro = 0 , .temperature = 1};
+	Params parameters = { .total_time = total_time, .hydro = hydro , .temperature = 1};
 
 
 	for( int i=0; i<numsims; ++i){
@@ -162,11 +162,11 @@ void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum){
 		simulation2( Ply, parameters, r_init, numPolymers, i, sqDisp, Rg);
 	}
 
-	char filenameSqDisp[sizeof "poly_exp3/sqDisp_XXX_XXX.dat"]; 
-	sprintf(filenameSqDisp, "poly_exp3/sqDisp_%03d_%03d.xyz", N_tot, in_simnum);
+	char filenameSqDisp[sizeof "poly_exp4/hydro1/sqDisp_XXX_XXX.dat"]; 
+	sprintf(filenameSqDisp, "poly_exp4/hydro1/sqDisp_%03d_%03d.xyz", N_tot, in_simnum);
 
-	char filenameRg[sizeof "poly_exp3/Rg_XXX_XXX.dat"]; 
-	sprintf(filenameRg, "poly_exp3/Rg_%03d_%03d.xyz", N_tot, in_simnum);
+	char filenameRg[sizeof "poly_exp4/hydro1/Rg_XXX_XXX.dat"]; 
+	sprintf(filenameRg, "poly_exp4/hydro1/Rg_%03d_%03d.xyz", N_tot, in_simnum);
 	
 	FILE* fp1 = fopen(filenameSqDisp,"w");
 	FILE* fp2 = fopen(filenameRg,"w");

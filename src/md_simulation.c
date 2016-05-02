@@ -166,15 +166,15 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 	/* Count the total # of monomers in the simulation */
 	for (int i = 0; i < numPolymers; ++i) N_tot += Ply[i].numAtoms;
 	//printf("---N_tot = %d\n", N_tot);
-	char filenameR[sizeof "poly_exp3/R_XXX_XXX.dat"]; 
-	sprintf(filenameR, "poly_exp3/R_%03d_%03d.xyz", N_tot, simnum);
+	char filenameR[sizeof "poly_exp3/hydro1/R_XXX_XXX.dat"]; 
+	sprintf(filenameR, "poly_exp3/hydro1/R_%03d_%03d.xyz", N_tot, simnum);
 	
-	char filenameF[sizeof "poly_exp3/F_XXX_XXX.dat"]; 
-	sprintf(filenameF, "poly_exp3/F_%03d_%03d.xyz", N_tot, simnum);
+	char filenameF[sizeof "poly_exp3/hydro1/F_XXX_XXX.dat"]; 
+	sprintf(filenameF, "poly_exp3/hydro1/F_%03d_%03d.xyz", N_tot, simnum);
 
 
-	fp1 = fopen(filenameR,"w");
-	fp2 = fopen(filenameF,"w");
+	//fp1 = fopen(filenameR,"w");
+	//fp2 = fopen(filenameF,"w");
 
 
 	time_t seed = time(NULL);
@@ -215,8 +215,8 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 			t2 = t1;
 			meanforce( r, f, Ply[0].numAtoms );
 
-			saveXYZtofile( Ply, numPolymers, r, N_tot, fp1 );
-			saveXYZtofile( Ply, numPolymers, f, N_tot, fp2 );
+	//		saveXYZtofile( Ply, numPolymers, r, N_tot, fp1 );
+	//		saveXYZtofile( Ply, numPolymers, f, N_tot, fp2 );
 
 		} 
 	}
@@ -230,8 +230,8 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 	free(Df);
 	free(Bdw);
 	free(r_ij);
-	fclose(fp1);
-	fclose(fp2);
+	//fclose(fp1);
+	//fclose(fp2);
 
 }
 
