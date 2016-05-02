@@ -123,8 +123,8 @@ void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum){
 
 
 	int total_time 	= 750000;
-	double* Rg 		= malloc( total_time*sizeof(double) );
-	double* sqDisp 	= malloc( total_time*sizeof(double) );
+	double* Rg 		= malloc( 0.01*total_time*sizeof(double) );
+	double* sqDisp 	= malloc( 0.01*total_time*sizeof(double) );
 
 	for(int i=0; i<total_time; ++i){
 
@@ -162,11 +162,11 @@ void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum){
 		simulation2( Ply, parameters, r_init, numPolymers, i, sqDisp, Rg);
 	}
 
-	char filenameSqDisp[sizeof "poly_exp4/hydro1/sqDisp_XXX_XXX.dat"]; 
-	sprintf(filenameSqDisp, "poly_exp4/hydro1/sqDisp_%03d_%03d.xyz", N_tot, in_simnum);
+	char filenameSqDisp[sizeof "mono/sqDisp_XXX_XXX.dat"]; 
+	sprintf(filenameSqDisp, "mono/sqDisp_%03d_%03d.xyz", N_tot, in_simnum);
 
-	char filenameRg[sizeof "poly_exp4/hydro1/Rg_XXX_XXX.dat"]; 
-	sprintf(filenameRg, "poly_exp4/hydro1/Rg_%03d_%03d.xyz", N_tot, in_simnum);
+	char filenameRg[sizeof "mono/hydro1/Rg_XXX_XXX.dat"]; 
+	sprintf(filenameRg, "mono/Rg_%03d_%03d.xyz", N_tot, in_simnum);
 	
 	FILE* fp1 = fopen(filenameSqDisp,"w");
 	FILE* fp2 = fopen(filenameRg,"w");

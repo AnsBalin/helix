@@ -18,6 +18,7 @@ void flowfield3( int numAtoms, double* r, double* f, double* vx0, double* vy0, d
 void meanforce( double* r, double* f, int numAtoms );
 void calculate_CoM( Polymers* Ply, double* r, double* r_com );
 double calculate_Rg( Polymers* Ply, double* r, double* r_com );
+double calculate_Rg2( Polymers* Ply, double* r, double* r_com );
 void shift( double* r, double* r_com, int N );
 double calculate_SqDisplacement( double* r_com );
 

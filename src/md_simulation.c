@@ -203,11 +203,12 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 		update( Ply, numPolymers, r, f, dw, r_ij, D, B, Df, Bdw, N_tot, hydro, (double)t*MD_dt);
 
 
-		calculate_CoM(Ply, r, r_com);
-		Rg[t] += calculate_Rg(Ply, r, r_com);
-		sqDisp[t] += calculate_SqDisplacement( r_com );
+
 		
 		if( t % tsave == 0 ){
+			calculate_CoM(Ply, r, r_com);
+			Rg[t] += calculate_Rg2(Ply, r, r_com);
+			sqDisp[t] += calculate_SqDisplacement( r_com );
 			
 			t1 = clock();
 			t1000 = t1 - t2;
@@ -631,6 +632,25 @@ double calculate_Rg( Polymers* Ply, double* r, double* r_com ){
 	}
 
 	return sqrt(Rg2);
+
+
+}
+
+double calculate_Rg2( Polymers* Ply, double* r, double* r_com ){
+
+
+	int N = Ply->numAtoms;
+	int n = Ply->firstAtomID;
+	double Rg2 = 0.0;
+	double r_n[DIM];
+
+	for (int i = 0; i < N; ++i)
+	{
+		FOR_ALL_K r_n[k] = r[DIM*(n+i) + k] - r_com[k];
+		FOR_ALL_K Rg2 += (1.0/(double)N)*r_n[k]*r_n[k];
+	}
+
+	return Rg2;
 
 
 }
