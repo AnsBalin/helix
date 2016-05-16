@@ -300,7 +300,7 @@ void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f,
 					double a = MD_q0;
 					double Dz = a / sqrt( 1 + R*R*l*l );
 
-					double x, y, radius, phase;
+					double x, y, z, radius, phase;
 					phase = 0.0;
 					/*for (int i = 0; i < numAtoms; ++i){
 						x = r[ DIM*p1 + 0 ];
@@ -311,13 +311,14 @@ void prescribedForces( Polymers* PlyList, int numPolymers, double* r, double* f,
 					}*/
 					phase = phase/numAtoms;
 					//printf("%lf\n", phase);
+					z = (0-numAtoms/2)*Dz;
 					for (int i = 0; i < numAtoms; ++i)
  					{
  						p1 = (PlyList+p)->firstAtomID + i;
- 						f[ DIM*p1 + 0 ] += -20*( r[ DIM*p1 + 0 ] - R*cos(l*i*Dz - w*t - phase) );
- 						f[ DIM*p1 + 1 ] += -20*( r[ DIM*p1 + 1 ] - R*sin(l*i*Dz - w*t - phase) );
- 						f[ DIM*p1 + 2 ] += -20*( r[ DIM*p1 + 2 ] - (i-numAtoms/2)*Dz - v*t);
- 						
+ 						f[ DIM*p1 + 0 ] += -25*( r[ DIM*p1 + 0 ] - R*cos(l*z - w*t - phase) );
+ 						f[ DIM*p1 + 1 ] += -25*( r[ DIM*p1 + 1 ] - R*sin(l*z - w*t - phase) );
+ 						f[ DIM*p1 + 2 ] += -25*( r[ DIM*p1 + 2 ] - z - v*t);
+ 						z += Dz;
  						//x = r[ DIM*p1 + 0 ];
  						//y = r[ DIM*p1 + 1 ];
  						//radius = sqrt(x*x + y*y);

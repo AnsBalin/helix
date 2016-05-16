@@ -29,8 +29,14 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
       Need to fix this next. */
   
   double* r_new = (double*) malloc( DIM*sizeof(double) );
+  double r_com[3] = {0.0, 0.0, 0.0};
+  double r_shifted[3] = {0.0,0.0,0.0};
   double theta,phi, a, R, l, Dz, z;
   int ii = 0;
+
+  double meanx = 0;
+  double meany = 0;
+  double meanz = 0;
   switch(SHAPE)
   {
 
@@ -58,6 +64,8 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
       l = Ply->h_l;
       Dz = a / sqrt( 1 + R*R*l*l );
 
+      
+
       z = -(Dz*Ply->numAtoms)/2;
 
       for (int n = 0; n < Ply->numAtoms; ++n)
@@ -65,6 +73,9 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
         r_new[0] = (R /*/sqrt( (1.0/25.0)*(Ply->h_w)*(Ply->h_w) + 1 )*/)*cos(l*z);
         r_new[1] = (R /*/sqrt( (1.0/25.0)*(Ply->h_w)*(Ply->h_w) + 1 )*/)*sin(l*z);
         r_new[2] = z;
+
+        
+
         placeAtom( n, r, r_new );
         z += Dz;
       }
@@ -72,8 +83,7 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
       break;
 
     case SAW:
-
-
+      
       placeAtom( 0, r, r0);
       for( int i=1; i<Ply->numAtoms; ++i ){
         do {
@@ -86,13 +96,32 @@ void placePolymer( Polymers* Ply, int SHAPE, double* r, double* r0, double* dr, 
           else printf("DIM must be 2 or 3 for SAW.\n");
           dr[0] = MD_q0*cos(theta)*cos(phi);
           dr[1] = MD_q0*cos(theta)*sin(phi);
+
+          meanz += dr[2];
+          meany += dr[1];
+          meanx += dr[0];
+
           FOR_ALL_K r_new[k] = r[(i-1)*DIM + k] + dr[k];
           
+          
+
         }while (overlap( Ply, i, r_new, r ) != 0);
-        
+        r_com[0] += (1.0/Ply->numAtoms)*r_new[0];
+        r_com[1] += (1.0/Ply->numAtoms)*r_new[1];
+        r_com[2] += (1.0/Ply->numAtoms)*r_new[2];
         placeAtom( i, r, r_new );
       }
+      printf("%.3f %.3f %.3f\n", meanx, meany, meanz);
 
+      meanx = 0.0;
+      for( int i=0; i<Ply->numAtoms; ++i){
+
+        FOR_ALL_K r_shifted[k] = r[DIM*i + k] - (r_com[k]-r0[k]);
+        meanx += r_shifted[2];
+        placeAtom(i,r,r_shifted);
+
+      }
+      printf("%.3f\n", meanx);
       break;
 
 

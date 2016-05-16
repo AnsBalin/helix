@@ -119,7 +119,6 @@ void simulation( Polymers* Ply, Params parameters, double* r_init, int numPolyme
 			t1000 = t1 - t2;
 			printf("N: %03d\tSim: %02d\tElapsed: %.3f\tRemaining: %.3f\n", N_tot, simnum, (t1-t0)/1000000, (total_time/tsave - t/tsave)*t1000/1000000);
 			t2 = t1;
-			meanforce( r, f, Ply[0].numAtoms );
 
 			saveXYZtofile( Ply, numPolymers, r, N_tot, fp1 );
 			saveXYZtofile( Ply, numPolymers, f, N_tot, fp2 );
@@ -214,7 +213,6 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 			t1000 = t1 - t2;
 			printf("N: %03d\tSim: %02d\tElapsed: %.3f\tRemaining: %.3f\n", N_tot, simnum, (t1-t0)/1000000, (total_time/tsave - t/tsave)*t1000/1000000);
 			t2 = t1;
-			meanforce( r, f, Ply[0].numAtoms );
 
 	//		saveXYZtofile( Ply, numPolymers, r, N_tot, fp1 );
 	//		saveXYZtofile( Ply, numPolymers, f, N_tot, fp2 );
@@ -233,6 +231,103 @@ void simulation2( Polymers* Ply, Params parameters, double* r_init, int numPolym
 	free(r_ij);
 	//fclose(fp1);
 	//fclose(fp2);
+
+}
+
+void simulation3( Polymers* Ply, Params parameters, double* r_init, int numPolymers, int simnum ){
+
+	double *r, *f, *dw, *D, *B, *Df, *Bdw, *r_ij, Rg, sqDisp;
+	FILE *fp1, *fp2, *fp3, *fp4;
+
+	double *r_com = malloc( 3*sizeof(double) );
+
+	int total_time = parameters.total_time;
+	int hydro = parameters.hydro;
+	double temperature = parameters.temperature;
+
+	int tsave = 100; // Output/save every tsave steps
+	int N_tot=0;
+	double t0, t1, t2, t1000; 
+
+	/* Count the total # of monomers in the simulation */
+	for (int i = 0; i < numPolymers; ++i) N_tot += Ply[i].numAtoms;
+	//printf("---N_tot = %d\n", N_tot);
+	
+
+	
+	char filenameR[sizeof "pump_exp1/R_XXX_XXX.dat"]; 
+	sprintf(filenameR, "pump_exp1/R_%03d_%03d.xyz", N_tot, simnum);
+	
+	char filenameF[sizeof "pump_exp1/F_XXX_XXX.dat"]; 
+	sprintf(filenameF, "pump_exp1/F_%03d_%03d.xyz", N_tot, simnum);
+
+	char filenameForce[sizeof "pump_exp1/F_XXX_XXX.dat"]; 
+	sprintf(filenameForce, "pump_exp1/F_%03d_%03d.xyz", N_tot, simnum);
+
+	char filenameR_COM[sizeof "pump_exp1/r_com_XXX_XXX.dat"]; 
+	sprintf(filenameR_COM, "pump_exp1/r_com_%03d_%03d.xyz", N_tot, simnum);
+	
+	fp1 = fopen(filenameR,"w");
+	fp2 = fopen(filenameF,"w");
+	fp3 = fopen(filenameForce,"w");
+	fp4 = fopen(filenameR_COM,"w");
+
+	
+	
+	/* Allocate the memory for the main vectors/matrices */
+	allocAll( &r, &f, &dw, &D, &B, &Df, &Bdw, &r_ij, N_tot );
+
+	/* Initialise the positions with previously determined initial locations */
+	for (int i = 0; i < DIM*N_tot; ++i) {
+		r[i] = r_init[i];
+	}
+	t0 = clock();
+	t1 = t0;
+	t2 = t0;
+
+	int iflow=0;
+	int t = 0;
+	calculate_CoM(Ply+1, r, r_com);
+	while( r_com[2] <= r[ DIM*(Ply[0].numAtoms-1) + 2 ] && t < total_time )
+	//for (int t = 0; t < total_time; ++t)
+	{
+
+		/* all the action happens in here */
+		update( Ply, numPolymers, r, f, dw, r_ij, D, B, Df, Bdw, N_tot, hydro, (double)t*MD_dt);
+		calculate_CoM(Ply+1, r, r_com);
+
+
+		if( t % tsave == 0 ){
+			
+
+			t1 = clock();
+			t1000 = t1 - t2;
+			printf("N: %03d\tSim: %02d\tElapsed: %.3f\tRemaining less than: %.3f\n", N_tot, simnum, (t1-t0)/1000000, (total_time/tsave - t/tsave)*t1000/1000000);
+			t2 = t1;
+			meanforce( r, f, Ply[0].numAtoms, fp3 );
+
+			saveXYZtofile( Ply, numPolymers, r, N_tot, fp1 );
+			saveXYZtofile( Ply, numPolymers, f, N_tot, fp2 );
+			fprintf(fp4, "%.3f,%.3f,%.3f\n",  r_com[0], r_com[1], r_com[2]);
+			
+		
+
+		}
+		t += 1; 
+	}
+
+
+	free(r);
+	free(f);
+	free(dw);
+	free(D);
+	free(B);
+	free(Df);
+	free(Bdw);
+	free(r_ij);
+	fclose(fp1);
+	fclose(fp2);
+	fclose(fp3);
 
 }
 
@@ -579,7 +674,7 @@ void flowfield3( int numAtoms, double* r, double* f, double* vx0, double* vy0, d
 	}
 
 }
-void meanforce( double* r, double* f, int numAtoms ){
+void meanforce( double* r, double* f, int numAtoms, FILE* fp ){
 
 double mean_radius = 0.0;
 double torque_z = 0.0;
@@ -592,7 +687,7 @@ for (int n = 0; n < numAtoms; ++n)
 	force_z += f[DIM*n+2]; 
 }
 
-printf("%f\t%f\t%f\n", mean_radius/numAtoms, torque_z, force_z);
+fprintf(fp,"%f\t%f\t%f\n", mean_radius/numAtoms, torque_z, force_z);
 
 }
 
