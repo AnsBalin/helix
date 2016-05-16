@@ -328,6 +328,7 @@ void simulation3( Polymers* Ply, Params parameters, double* r_init, int numPolym
 	fclose(fp1);
 	fclose(fp2);
 	fclose(fp3);
+	fclose(fp4);
 
 }
 

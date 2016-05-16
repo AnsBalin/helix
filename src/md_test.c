@@ -55,7 +55,7 @@ int main( int argc, char *argv[]  ){
 	//single_polymer_statistics(in_N, in_hydro, in_simnum);
 
 
-	passage_time( in_N, 100000000, 10, in_simnum );
+	passage_time( in_N, 100000, 10, in_simnum );
 
 	return 0;
 }
