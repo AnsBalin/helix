@@ -9,5 +9,6 @@ void printAtomR( int atom, double* r );
 void saveRtofile( double* r, int N_tot, FILE* fp );
 void saveXYZtofile( Polymers* PlyList, int numPolymers, double* r, int N_tot, FILE* fp );
 void saveStatstofile( double t, double* r_com, double Rg, FILE* fp );
+void saveWork( double work, FILE* fp);
 #endif
 

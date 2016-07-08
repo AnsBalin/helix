@@ -28,6 +28,12 @@ void saveRtofile( double* r, int N_tot, FILE* fp ){
 
 }
 
+void saveWork( double work, FILE* fp){
+
+  fprintf( fp, "%0.15lf\n", work );
+
+};
+
 void saveXYZtofile( Polymers* PlyList, int numPolymers, double* r, int N_tot, FILE* fp ){
   /*  XYZ file format for importing trajectories into VMD
       NOTE Currently using Polymer ID as the molecule name in VMD, this might be messing it up */

@@ -17,6 +17,7 @@ void CholeskyTest();
 void matrixMultiplyTest();
 void single_polymer_statistics( int in_polymerN, int hydro, int in_simnum );
 void passage_time( int in_N, int max_time, double r_rand_max, int in_simnum );
+void work( int in_N, int max_time, double r_rand_max, int in_simnum );
 
 int main( int argc, char *argv[]  ){
 
@@ -55,7 +56,7 @@ int main( int argc, char *argv[]  ){
 	//single_polymer_statistics(in_N, in_hydro, in_simnum);
 
 
-	passage_time( in_N, 80000000, 10, in_simnum );
+	work( in_N, 80000000, 10, in_simnum );
 
 	return 0;
 }
@@ -307,6 +308,67 @@ void passage_time( int in_N, int max_time, double r_rand_max, int in_simnum ){
 
 	double Dr[3] = {0.0, 0.0, 0.0};
 	double r0[3] = {x_rand, y_rand, -0.5*helixN*MD_q0/sqrt( 1 + (Ply[0].h_R * Ply[0].h_R) * (Ply[0].h_l* Ply[0].h_l) ) - 5.0 };
+
+	placePolymer( Ply, HELIX, r_init_helix, r0, Dr, 0.0 );
+	placePolymer( Ply+1, SAW, r_init_poly, r0, Dr, 0.0 );
+
+
+	int ii = 0;
+	for (int i = 0; i < DIM*helixN; ++i)
+	{
+		r_init[ii] = r_init_helix[i];
+		++ii;
+	}
+	for (int i = 0; i < DIM*polyN; ++i)
+	{
+		r_init[ii] = r_init_poly[i];
+		++ii;
+	}
+
+
+	Params parameters = { .total_time = max_time, .hydro = 1 , .temperature = 1};
+
+	simulation3( Ply, parameters, r_init, numPolymers, in_simnum);
+
+	free(Ply);
+	free(r_init_helix);
+	free(r_init_poly);
+	free(r_init);
+}
+
+
+void work( int in_N, int max_time, double r_rand_max, int in_simnum ){
+
+	time_t seed = time(NULL);
+	srand( seed );	
+
+	int numPolymers = 2;
+	Polymers* Ply = malloc( numPolymers*sizeof(Polymers) );
+
+	/* Create helix */
+	int helixN = 90;
+	Ply[0].numAtoms = helixN;
+	Ply[0].firstAtomID = 0;
+	Ply[0].perscription = HELIX;
+	Ply[0].h_w = 35;
+	Ply[0].h_v = 0.0;
+	Ply[0].h_R = 2.0*MD_q0;
+	Ply[0].h_l = 0.5;
+
+	int polyN = in_N;
+	Ply[1].numAtoms = polyN;
+	Ply[1].firstAtomID = helixN;
+	Ply[1].perscription = NORMAL;
+
+	double* r_init_helix = malloc( DIM*helixN*sizeof(double));
+	double* r_init_poly  = malloc( DIM*polyN *sizeof(double));
+	double* r_init = malloc( DIM*(helixN + polyN)*sizeof(double) );
+	
+	double x_rand = 0.0;
+	double y_rand = 0.0;
+
+	double Dr[3] = {0.0, 0.0, 0.0};
+	double r0[3] = {x_rand, y_rand, -0.5*helixN*MD_q0/sqrt( 1 + (Ply[0].h_R * Ply[0].h_R) * (Ply[0].h_l* Ply[0].h_l) ) - 15.0 };
 
 	placePolymer( Ply, HELIX, r_init_helix, r0, Dr, 0.0 );
 	placePolymer( Ply+1, SAW, r_init_poly, r0, Dr, 0.0 );

@@ -256,20 +256,20 @@ void simulation3( Polymers* Ply, Params parameters, double* r_init, int numPolym
 
 	
 	char filenameR[sizeof "pump_exp1/R_XXX_XXX.dat"]; 
-	sprintf(filenameR, "pump_exp1/R_%03d_%03d.xyz", N_tot, simnum);
+	sprintf(filenameR, "work_exp1/R_%03d_%03d.xyz", N_tot, simnum);
 	
 	char filenameF[sizeof "pump_exp1/F_XXX_XXX.dat"]; 
-	sprintf(filenameF, "pump_exp1/F_%03d_%03d.xyz", N_tot, simnum);
+	sprintf(filenameF, "work_exp1/F_%03d_%03d.xyz", N_tot, simnum);
 
-	char filenameForce[sizeof "pump_exp1/F_XXX_XXX.dat"]; 
-	sprintf(filenameForce, "pump_exp1/F_%03d_%03d.xyz", N_tot, simnum);
+	char filenameWork[sizeof "pump_exp1/F_XXX_XXX.dat"]; 
+	sprintf(filenameWork, "work_exp1/W_%03d_%03d.xyz", N_tot, simnum);
 
 	char filenameR_COM[sizeof "pump_exp1/r_com_XXX_XXX.dat"]; 
-	sprintf(filenameR_COM, "pump_exp1/r_com_%03d_%03d.xyz", N_tot, simnum);
+	sprintf(filenameR_COM, "work_exp1/r_com_%03d_%03d.xyz", N_tot, simnum);
 	
 	fp1 = fopen(filenameR,"w");
 	fp2 = fopen(filenameF,"w");
-	fp3 = fopen(filenameForce,"w");
+	fp3 = fopen(filenameWork,"w");
 	fp4 = fopen(filenameR_COM,"w");
 
 	
@@ -285,6 +285,7 @@ void simulation3( Polymers* Ply, Params parameters, double* r_init, int numPolym
 	t1 = t0;
 	t2 = t0;
 
+	double	work = 0.0;
 	int iflow=0;
 	int t = 0;
 	calculate_CoM(Ply+1, r, r_com);
@@ -293,9 +294,9 @@ void simulation3( Polymers* Ply, Params parameters, double* r_init, int numPolym
 	{
 
 		/* all the action happens in here */
-		update( Ply, numPolymers, r, f, dw, r_ij, D, B, Df, Bdw, N_tot, hydro, (double)t*MD_dt);
+		work = update( Ply, numPolymers, r, f, dw, r_ij, D, B, Df, Bdw, N_tot, hydro, (double)t*MD_dt);
 		calculate_CoM(Ply+1, r, r_com);
-
+	
 
 		if( t % tsave == 0 ){
 			
@@ -304,7 +305,7 @@ void simulation3( Polymers* Ply, Params parameters, double* r_init, int numPolym
 			t1000 = t1 - t2;
 			printf("N: %03d\tSim: %02d\tElapsed: %.3f\tRemaining less than: %.3f\n", N_tot, simnum, (t1-t0)/1000000, (total_time/tsave - t/tsave)*t1000/1000000);
 			t2 = t1;
-			meanforce( r, f, Ply[0].numAtoms, fp3 );
+			saveWork( work, fp3);
 
 			saveXYZtofile( Ply, numPolymers, r, N_tot, fp1 );
 			saveXYZtofile( Ply, numPolymers, f, N_tot, fp2 );
@@ -333,8 +334,11 @@ void simulation3( Polymers* Ply, Params parameters, double* r_init, int numPolym
 }
 
 
-void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, double* r_ij, double* D, double* B, double* Df, double* Bdw, int N_tot, int hydro, double t  ){
+double update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, double* r_ij, double* D, double* B, double* Df, double* Bdw, int N_tot, int hydro, double t  ){
 	
+	/* Work increment return value */
+	double dW = 0.0;
+
 	/* computeForces() increments f so f needs to be reset */
 	for (int n = 0; n < DIM*N_tot; ++n)
 	{
@@ -425,6 +429,7 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 
 						index = DIM*((Ply+p)->firstAtomID) + n;		
 						r[index]+= a1*Df[index];
+						dW += f[index]*a1*Df[index];
 					}						
 					break;
 
@@ -501,7 +506,7 @@ void update( Polymers* Ply, int numPolymers, double* r, double* f, double* dw, d
 
 	}
 
-
+	return dW;
 
 }
 
